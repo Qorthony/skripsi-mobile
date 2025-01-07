@@ -4,6 +4,7 @@ import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { Box } from '@/components/ui/box';
 
 export default function HomeScreen() {
   return (
@@ -34,7 +35,14 @@ export default function HomeScreen() {
           to open developer tools.
         </ThemedText>
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
+      <ThemedView style={styles.stepContainer}>        
+        <Box
+          className="bg-primary-500 p-5"
+        >
+          <Text className='text-typography-0'>
+            This is the Box
+          </Text>
+        </Box>
         <ThemedText type="subtitle">Step 2: Explore</ThemedText>
         <ThemedText className='font-bold bg-slate-600'>
           <Text className='text-yellow-500'>Tap the Explore tab to learn more about what's included in this starter app.</Text>
