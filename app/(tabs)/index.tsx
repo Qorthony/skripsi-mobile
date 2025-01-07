@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { Image, StyleSheet, Platform, Text } from 'react-native';
 
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
@@ -36,8 +36,8 @@ export default function HomeScreen() {
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
         <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
+        <ThemedText className='font-bold bg-slate-600'>
+          <Text className='text-yellow-500'>Tap the Explore tab to learn more about what's included in this starter app.</Text>
         </ThemedText>
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
