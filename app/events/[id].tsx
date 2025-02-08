@@ -1,6 +1,6 @@
 import { View, Text, SafeAreaView, Image, Pressable, FlatList } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { useLocalSearchParams } from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router'
 import { EVENTS_DATA, TicketTypes } from '@/constants/events-data';
 import dayjs from 'dayjs';
 import CounterButton from '@/components/CounterButton';
@@ -84,7 +84,10 @@ export default function DetailEvent() {
                         <Text>Total</Text>
                         <Text>Rp. {selected.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0)}</Text>
                     </View>
-                    <Pressable className='bg-purple-600 rounded-lg p-2'>
+                    <Pressable 
+                        className='bg-purple-600 rounded-lg p-2'
+                        onPress={() => router.push('/transactions')}
+                    >
                         <Text className='text-white text-center'>Beli Tiket</Text>
                     </Pressable>
                 </AbsoluteBottomView>

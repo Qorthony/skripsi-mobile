@@ -46,6 +46,10 @@ export default function RootLayout() {
           <Stack.Screen name="events/[id]" options={{
             title: 'Detail Event',
           }} />
+          <Stack.Screen name="transactions/index" options={{
+            title: 'Transaction',
+            headerShown: false,
+          }} />
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />
