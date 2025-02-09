@@ -9,6 +9,7 @@ import { Drawer, DrawerBackdrop, DrawerBody, DrawerContent, DrawerFooter, Drawer
 import { Radio, RadioGroup, RadioIcon, RadioIndicator, RadioLabel } from '@/components/ui/radio'
 import { CircleIcon, EditIcon, Icon } from '@/components/ui/icon'
 import { Divider } from '@/components/ui/divider'
+import { router } from 'expo-router'
 
 
 export default function Transaction() {
@@ -88,7 +89,7 @@ export default function Transaction() {
 
         <View className='mt-2'>
           <Card size='sm'>
-            <Text className='text-xl font-bold mb-2'>Isi Data Peserta</Text>
+            <Text className='text-lg font-bold mb-2'>Isi Data Peserta</Text>
 
             {
               participant.map((_, index) => (
@@ -97,6 +98,31 @@ export default function Transaction() {
             }
           </Card>
         </View>
+
+        <Card
+          size='sm'
+          className='mt-2 mb-10'
+        >
+          <Text className='text-lg font-bold mb-2'>Ringkasan Pembayaran</Text>
+          <View className='flex-row justify-between'>
+            <View>
+              <Text className='text-sm'>UX Research</Text>
+              <Text className='text-gray-400'>1x</Text>
+            </View>
+            <Text className='text-sm'>Rp. 150000</Text>
+          </View>
+          <View className='flex-row justify-between'>
+            <View>
+              <Text className='text-sm'>Biaya Layanan</Text>
+            </View>
+            <Text className='text-sm'>Rp. 150000</Text>
+          </View>
+          <Divider className='my-2' />
+          <View className='flex-row justify-between'>
+            <Text className='font-semibold'>Total Pembayaran</Text>
+            <Text>Rp. 150000</Text>
+          </View>
+        </Card>
 
       </ScrollView>
 
@@ -107,7 +133,7 @@ export default function Transaction() {
               selectedPayment === '' ?
               '':
               <Pressable className='flex-row items-center' onPress={() => setOpenPaymentOptions(true)} >
-                <Text className=''>Gopay </Text>
+                <Text className='text-sm'>{PAYMENT_OPTIONS.find((value)=>value.code===selectedPayment)?.name} </Text>
                   <Icon as={EditIcon} size='sm'/>
               </Pressable>
             }
@@ -126,7 +152,7 @@ export default function Transaction() {
             :
             <Pressable
               className='bg-purple-600 rounded-lg p-2 justify-center'
-              onPress={() => console.log('Lanjut')}
+              onPress={() => router.push('/transactions/payment')}
             >
               <Text className='text-white text-center'>Bayar Sekarang</Text>
             </Pressable>
