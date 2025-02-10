@@ -5,6 +5,7 @@ import CountdownTimer from '@/components/CountdownTimer'
 import { Card } from '@/components/ui/card'
 import { CopyIcon, EditIcon, Icon, InfoIcon } from '@/components/ui/icon'
 import * as Clipboard from 'expo-clipboard';
+import { router } from 'expo-router'
 
 export default function Payment() {
   const copyToClipboard = async (value:string) => {
@@ -12,6 +13,12 @@ export default function Payment() {
     
     await Clipboard.setStringAsync(value);
   };
+
+  const handleCheckStatus = () => {
+    console.log('Check Status');
+
+    router.push('/transactions/success')
+  }
 
   return (
     <SafeAreaView className='flex-1 bg-slate-100'>
@@ -61,7 +68,7 @@ export default function Payment() {
 
               <Pressable
                 className='bg-purple-600 rounded-lg p-2 justify-center flex-row items-center'
-                onPress={() => console.log('Check Status')}
+                onPress={handleCheckStatus}
               >
                 <Icon as={InfoIcon} size='xs' className='text-white'/>
                 <Text className='text-sm text-white text-center'> Cek Status</Text>

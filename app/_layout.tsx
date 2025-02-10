@@ -54,6 +54,10 @@ export default function RootLayout() {
             title: 'Transaction Payment',
             headerShown: false,
           }} />
+          <Stack.Screen name="transactions/success" options={{
+            title: 'Transaction Success',
+            headerShown: false,
+          }} />
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />
