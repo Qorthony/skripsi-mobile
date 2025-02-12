@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Card } from '@/components/ui/card'
 import { Divider } from '@/components/ui/divider'
 import { Button, ButtonText } from '@/components/ui/button'
+import { router } from 'expo-router'
 
 export default function Success() {
   return (
@@ -58,7 +59,8 @@ export default function Success() {
             <ButtonText>Daftar Transaksi</ButtonText>
           </Button>
           <Button size="md" variant="solid" action="primary" onPress={() => {
-            console.log('Tikat Saya')
+            console.log('Tikat Saya');
+            router.push('/my-tickets')
           }}>
             <ButtonText>Tiket Saya</ButtonText>
           </Button>
