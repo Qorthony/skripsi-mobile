@@ -5,6 +5,8 @@ import { EVENTS_DATA, TicketTypes } from '@/constants/events-data';
 import dayjs from 'dayjs';
 import CounterButton from '@/components/CounterButton';
 import AbsoluteBottomView from '@/components/AbsoluteBottomView';
+import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
+import { ChevronRightIcon } from '@/components/ui/icon';
 
 type selectedTicket = {
     id: number;
@@ -43,6 +45,13 @@ export default function DetailEvent() {
                             <Text className='text-sm text-gray-600'>{EVENTS_DETAIL?.location}</Text> :
                             <Text className='text-sm text-gray-600'>{EVENTS_DETAIL?.city}</Text>
                     }
+                </View>
+                
+                <View className='flex-row justify-end px-4 pb-2'>
+                    <Button size="sm" variant="link" action="primary" onPress={() => router.push(`/events/${id}/secondary-tickets`)}>
+                        <ButtonText>Secondary Ticket</ButtonText>
+                        <ButtonIcon as={ChevronRightIcon} />
+                    </Button>
                 </View>
 
                 <View className='bg-gray-100 d-flex justify-around flex-row'>
