@@ -4,7 +4,7 @@ import { Divider } from '@/components/ui/divider';
 import { HStack } from '@/components/ui/hstack';
 import { Input, InputField } from '@/components/ui/input';
 import { useSession } from '@/hooks/auth/ctx';
-import { Link, Redirect } from 'expo-router';
+import { Link, Redirect, router } from 'expo-router';
 import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -51,8 +51,10 @@ export default function SignIn() {
                     </Button>
                 </Link>
 
-                <Button variant='link' className='mt-4'>
-                    <ButtonText>Register</ButtonText>
+                <Button variant='link' className='mt-4' onPress={() => {
+                    router.push('/register');
+                }}>
+                    <ButtonText>Buat Akun</ButtonText>
                 </Button>
 
             </Card>
