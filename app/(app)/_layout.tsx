@@ -57,6 +57,9 @@ export default function RootLayout() {
             title: 'Kembali',
             headerShown: true,
           }} />
+          <Stack.Screen name="checkin/[id]" options={{
+            title: 'Checkin',
+          }} />
           <Stack.Screen name="transactions/index" options={{
             title: 'Transaction',
             headerShown: false,

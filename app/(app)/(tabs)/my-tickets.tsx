@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/drawer"
 import { Divider } from '@/components/ui/divider'
 import { Input, InputField } from '@/components/ui/input'
+import { Link, router } from 'expo-router'
 
 export default function MyTickets() {
   const [showActionsheet, setShowActionsheet] = useState(false)
@@ -64,9 +65,14 @@ export default function MyTickets() {
                   </View>
                 </HStack>
                 <VStack>
-                  <Button variant="outline" size="sm" className='mt-2 mb-2'>
-                    <ButtonText>Check-In</ButtonText>
-                  </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className='mt-2 mb-2'
+                      onPress={() => router.push('/checkin/'+ticket.id)}
+                    >
+                      <ButtonText>Check-In</ButtonText>
+                    </Button>
                   <Button onPress={() => setShowActionsheet(true)}>
                     <ButtonText>Lainnya</ButtonText>
                   </Button>
