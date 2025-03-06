@@ -5,15 +5,54 @@ import { HStack } from '@/components/ui/hstack';
 import { Input, InputField } from '@/components/ui/input';
 import { useSession } from '@/hooks/auth/ctx';
 import { Link, Redirect, router } from 'expo-router';
+import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
-export default function SignIn() {
-    const { session, isLoading } = useSession();
+export default function Login() {
+    const { session, setUser } = useSession();
     if (session) {
         return <Redirect href="/" />;
     }
+
+    const apiUrl: string = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000/api';
+
+    const [email, setEmail] = useState('');
+    const [loading, setLoading] = useState(false);
+    
+    const logIn = async () => {
+        console.log('login button clicked');
+        
+        try {
+            const res = await fetch(apiUrl+'/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: email,
+                }),
+            });
+
+            if (!res.ok) {
+                throw new Error(`Response status: ${res.status}`);
+            }
+
+            const data = await res.json();
+            console.log(apiUrl);
+            console.log(data.user?.email);
+            setUser(data.user);
+            router.push('/verify-otp');
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    
+
+    console.log('email : ', email);
+    
   return (
     <SafeAreaView className='flex-1 bg-slate-100'>
         <View className='mx-4 my-8'>
@@ -41,15 +80,17 @@ export default function SignIn() {
                         variant='underlined'
                         size='lg'
                     >
-                        <InputField placeholder='example@email.com' />
+                        <InputField 
+                            placeholder='example@email.com' 
+                            onChangeText={setEmail} 
+                            value={email} 
+                        />
                     </Input>
                 </View>
-
-                <Link href='/verify-otp' asChild>
-                    <Button>
-                        <ButtonText>Login</ButtonText>
-                    </Button>
-                </Link>
+                
+                <Button onPress={logIn}>
+                    <ButtonText>Login</ButtonText>
+                </Button>
 
                 <Button variant='link' className='mt-4' onPress={() => {
                     router.push('/register');

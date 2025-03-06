@@ -13,7 +13,7 @@ export interface EventTypes {
     location: string;
     city?: string|null;
     event_link?: string|null;
-    tickets: TicketTypes[];
+    tickets?: TicketTypes[];
 }
 
 export const DUMMY_POSTER = require('@/assets/images/dummy_poster.png');

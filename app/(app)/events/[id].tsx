@@ -1,12 +1,13 @@
 import { View, Text, SafeAreaView, Image, Pressable, FlatList } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { router, useLocalSearchParams } from 'expo-router'
-import { EVENTS_DATA, TicketTypes } from '@/constants/events-data';
+import { DUMMY_POSTER, EVENTS_DATA } from '@/constants/events-data';
 import dayjs from 'dayjs';
 import CounterButton from '@/components/CounterButton';
 import AbsoluteBottomView from '@/components/AbsoluteBottomView';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { ChevronRightIcon } from '@/components/ui/icon';
+import { useSession } from '@/hooks/auth/ctx';
 
 type selectedTicket = {
     id: number;
@@ -15,8 +16,57 @@ type selectedTicket = {
     quantity: number;
 }
 
+type EventType = {
+    nama: string;
+    jadwal_mulai: string;
+    location: string;
+    kota?: string;
+    description?: string;
+    tickets: TicketTypes[];
+}
+
+interface TicketTypes {
+    id: number;
+    nama: string;
+    harga: number;
+    keterangan: string;
+}
+
 export default function DetailEvent() {
     const { id } = useLocalSearchParams();
+
+    const {session} = useSession();
+
+    const [event, setEvent] = useState<EventType | null>(null);
+
+    const apiUrl: string = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000/api';
+
+    const fetchEvent = async () => {
+        try {
+            const res = await fetch(apiUrl+'/events/'+id, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session}`,
+                },
+            });
+
+            if (!res.ok) {
+                throw new Error(`Response status: ${res.status}`);
+            }
+
+            const json = await res.json();
+            
+            setEvent(json.data);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    useEffect(() => {
+        fetchEvent();
+    }, []);
+
     const EVENTS_DETAIL = EVENTS_DATA.find(event => event.id === Number(id));
 
     const [activeTab, setActiveTab] = useState('deskripsi');
@@ -28,22 +78,22 @@ export default function DetailEvent() {
         console.log(id);
     }, [id]);
 
-
+    const total = selected.reduce((acc, item) => acc + (item.price * item.quantity), 0);
 
     return (
         <SafeAreaView className='flex-1 bg-white'>
             <View className='flex-1 bg-white'>
                 <Image
-                    source={EVENTS_DETAIL?.image}
+                    source={DUMMY_POSTER}
                     className='w-full h-48 rounded-lg'
                 />
                 <View className='px-4 py-2'>
-                    <Text className='text-xl font-bold'>{EVENTS_DETAIL?.name}</Text>
-                    <Text className='text-sm text-gray-600'>{dayjs(EVENTS_DETAIL?.date).format('DD MMMM YYYY')}</Text>
+                    <Text className='text-xl font-bold'>{event?.nama}</Text>
+                    <Text className='text-sm text-gray-600'>{dayjs(event?.jadwal_mulai).format('DD MMMM YYYY')}</Text>
                     {
-                        EVENTS_DETAIL?.location === 'online' ?
-                            <Text className='text-sm text-gray-600'>{EVENTS_DETAIL?.location}</Text> :
-                            <Text className='text-sm text-gray-600'>{EVENTS_DETAIL?.city}</Text>
+                        event?.location === 'online' ?
+                            <Text className='text-sm text-gray-600'>{event?.location}</Text> :
+                            <Text className='text-sm text-gray-600'>{event?.kota}</Text>
                     }
                 </View>
                 
@@ -71,16 +121,19 @@ export default function DetailEvent() {
                 <View className='flex-1 p-4'>
                     {
                         activeTab === 'deskripsi' ?
-                            <Text>{EVENTS_DETAIL?.description}</Text> :
-                            <FlatList
+                            <Text>{event?.description}</Text> 
+                            :<FlatList
                                 className='mb-16'
                                 showsVerticalScrollIndicator={false}
-                                data={EVENTS_DETAIL?.tickets}
+                                data={event?.tickets}
                                 renderItem={({ item }) => (
                                     <TicketCard
                                         selected={selected}
                                         setSelected={setSelected} 
-                                        {...item} 
+                                        id={item.id}
+                                        type={item.nama}
+                                        price={item.harga}
+                                        description={item.keterangan}
                                     />
                                 )}
                                 keyExtractor={item => item.id.toString()}
@@ -91,7 +144,7 @@ export default function DetailEvent() {
                 <AbsoluteBottomView>
                     <View className='flex-row justify-between'>
                         <Text>Total</Text>
-                        <Text>Rp. {selected.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0)}</Text>
+                        <Text>Rp. {new Intl.NumberFormat('id-ID').format(total)}</Text>
                     </View>
                     <Pressable 
                         className='bg-purple-600 rounded-lg p-2'
@@ -154,7 +207,7 @@ function TicketCard({
         <View className='bg-slate-200 rounded-lg p-2 my-2'>
             <View>
                 <Text className='font-bold'>{type}</Text>
-                <Text className='text-sm'>Rp. {price}</Text>
+                <Text className='text-sm'>Rp. {new Intl.NumberFormat('id-ID').format(price)}</Text>
                 <Text className='text-sm text-gray-600'>{description}</Text>
                 <View className='items-end'>
                     <CounterButton
