@@ -60,15 +60,15 @@ export default function RootLayout() {
           <Stack.Screen name="checkin/[id]" options={{
             title: 'Checkin',
           }} />
-          <Stack.Screen name="transactions/index" options={{
+          <Stack.Screen name="transactions/[id]" options={{
             title: 'Transaction',
             headerShown: false,
           }} />
-          <Stack.Screen name="transactions/payment" options={{
+          <Stack.Screen name="transactions/[id]/payment" options={{
             title: 'Transaction Payment',
             headerShown: false,
           }} />
-          <Stack.Screen name="transactions/success" options={{
+          <Stack.Screen name="transactions/[id]/success" options={{
             title: 'Transaction Success',
             headerShown: false,
           }} />

@@ -67,8 +67,6 @@ export default function DetailEvent() {
         fetchEvent();
     }, []);
 
-    const EVENTS_DETAIL = EVENTS_DATA.find(event => event.id === Number(id));
-
     const [activeTab, setActiveTab] = useState('deskripsi');
     const activeTabClassName = 'border-b-2 border-purple-600';
 
@@ -79,6 +77,39 @@ export default function DetailEvent() {
     }, [id]);
 
     const total = selected.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+
+    const handleBuyTicket = async () => {
+        console.log(selected);
+        // router.push('/transactions')
+
+        console.log(apiUrl+'/transactions');
+        
+
+        try {
+            const res = await fetch(apiUrl+'/transactions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session}`,
+                },
+                body: JSON.stringify({
+                    event_id: id,
+                    selected_ticket: selected,
+                }),
+            });
+
+            if (!res.ok) {
+                throw new Error(`Response status: ${res.status}`);
+            }
+
+            const json = await res.json();
+            console.log("transaction id after detail event : "+json.data.id);
+            
+            router.push(`/transactions/${json.data.id}`);
+        } catch (error) {
+            console.error(error);
+        }
+    }
 
     return (
         <SafeAreaView className='flex-1 bg-white'>
@@ -148,7 +179,7 @@ export default function DetailEvent() {
                     </View>
                     <Pressable 
                         className='bg-purple-600 rounded-lg p-2'
-                        onPress={() => router.push('/transactions')}
+                        onPress={handleBuyTicket}
                     >
                         <Text className='text-white text-center'>Beli Tiket</Text>
                     </Pressable>
