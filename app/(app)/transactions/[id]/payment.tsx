@@ -1,23 +1,66 @@
 import { View, Text, Pressable } from 'react-native'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import CountdownTimer from '@/components/CountdownTimer'
 import { Card } from '@/components/ui/card'
 import { CopyIcon, EditIcon, Icon, InfoIcon } from '@/components/ui/icon'
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
+import { useSession } from '@/hooks/auth/ctx'
+import { PaymentMethods } from '@/constants/payment-method'
 
 export default function Payment() {
+  const { id } = useLocalSearchParams();
+
+  const {session} = useSession();
+
+  const [transaction, setTransaction] = useState<any>(null);
+
+  const apiUrl: string = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000/api';
+
+  const getTransaction = async () => {
+    try {
+      const res = await fetch(apiUrl+'/transactions/'+id, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Response status: ${res.status}`);
+      }
+
+      let json = await res.json();
+      console.log(json.data);
+      
+      setTransaction(json.data);
+      return json.data;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  useEffect(() => {
+    getTransaction();
+  }, [id]);
+
   const copyToClipboard = async (value:string) => {
     console.log(value);
     
     await Clipboard.setStringAsync(value);
   };
 
-  const handleCheckStatus = () => {
+  const handleCheckStatus = async () => {
     console.log('Check Status');
 
-    router.push('/transactions/success')
+    const transactionData = await getTransaction();
+
+    if (transactionData.status === 'success') {
+      router.replace(`/transactions/${id}/success`);
+    }
   }
 
   return (
@@ -36,22 +79,22 @@ export default function Payment() {
           <Card className='mb-2'>
             <View className='mb-1'>
               <Text className='text-sm text-gray-400'>Metode Pembayaran</Text>
-              <Text>BRIVA</Text>
+              <Text> { transaction?.metode_pembayaran ? PaymentMethods[transaction.metode_pembayaran]:"" } </Text>
             </View>
             <View className='mb-1'>
               <Text className='text-sm text-gray-400'>No. Virtual Account</Text>
               <Pressable onPress={() => {
-                copyToClipboard('111189899898')
+                copyToClipboard(transaction?.detail_pembayaran.va_number)
               }}>
-                <Text>111189899898 <Icon as={CopyIcon} size='xs' /> </Text>
+                <Text> { transaction?.detail_pembayaran.va_number } <Icon as={CopyIcon} size='xs' /> </Text>
               </Pressable>
             </View>
             <View className='mb-1'>
               <Text className='text-sm text-gray-400'>Nominal Pembayaran</Text>
               <Pressable onPress={() => {
-                copyToClipboard('150000')
+                copyToClipboard(transaction?.total_pembayaran)
               }}>
-                <Text>Rp. 150000 <Icon as={CopyIcon} size='xs' /> </Text>
+                <Text>Rp. { new Intl.NumberFormat('id-ID').format(transaction?.total_pembayaran) } <Icon as={CopyIcon} size='xs' /> </Text>
               </Pressable>
             </View>
           </Card>

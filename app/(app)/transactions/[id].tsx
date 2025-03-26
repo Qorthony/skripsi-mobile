@@ -124,6 +124,42 @@ export default function Transaction() {
 
   const [showModal, setShowModal] = useState(0);
 
+  const postUpdateTransaction = async () => {
+    try {
+      const data = {
+        metode_pembayaran: selectedPayment,
+        ticket_issueds: 
+          participants?.map((participant) => {
+            return {
+              id: participant.ticket_id,
+              email_penerima: participant.email,
+              pemesan: participant.pemesan
+            }
+          })
+      }
+
+      console.log(data);
+      
+
+      const res = await fetch(apiUrl+'/transactions/'+id, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${session}`,
+        },
+        body: JSON.stringify(data)
+      });
+
+      let json = await res.json();
+      console.log(json);
+
+      router.push(`/transactions/${id}/payment`)
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   return (
     <SafeAreaView
       className='flex-1 bg-slate-100'
@@ -276,7 +312,7 @@ export default function Transaction() {
             :
             <Pressable
               className='bg-purple-600 rounded-lg p-2 justify-center'
-              onPress={() => router.push('/transactions/payment')}
+              onPress={postUpdateTransaction}
             >
               <Text className='text-white text-center'>Bayar Sekarang</Text>
             </Pressable>
