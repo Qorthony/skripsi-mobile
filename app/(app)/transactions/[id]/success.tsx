@@ -65,32 +65,36 @@ export default function Success() {
           <Text>{ transaction?.metode_pembayaran ? PaymentMethods[transaction.metode_pembayaran]:"" }</Text>
         </View>
         <View className='flex-row justify-between'>
-          <Text className='text-sm text-gray-400'>No. Virtual Account</Text>
-          <Text>{ transaction?.detail_pembayaran.va_number }</Text>
-        </View>
-        <View className='flex-row justify-between'>
           <Text className='text-sm text-gray-400'>Nominal Pembayaran</Text>
           <Text>Rp. { new Intl.NumberFormat('id-ID').format(transaction?.total_pembayaran) }</Text>
         </View>
       </Card>
 
-      <Card
-        className='mx-2 mb-2'
-      >
-        <Text className='text-lg font-bold mb-2'>Detail Peserta</Text>
-        <View className='flex-row justify-between'>
-          <Text className='text-sm'>Nama</Text>
-          <Text>John Doe</Text>
-        </View>
-        <View className='flex-row justify-between'>
-          <Text className='text-sm'>Email</Text>
-          <Text>john@doe.com </Text>
-        </View>
-        <View className='flex-row justify-between'>
-          <Text className='text-sm'>No. HP</Text>
-          <Text>08123456789</Text>
-        </View>
-      </Card>
+      {
+        transaction?.transaction_items.map((item: any, i: number) => (
+          item.ticket_issueds.map((ticket: any, j: number) => (
+            <Card
+              key={j}
+              className='mx-2 mb-2'
+            >
+              <Text className='text-lg font-bold mb-2'>Detail Peserta {j+1}</Text>
+              <View className='flex-row justify-between'>
+                <Text className='text-sm text-gray-400'>Email</Text>
+                <Text>{ ticket.email_penerima }</Text>
+                <Text>{ ticket?.user?.email }</Text>
+              </View>
+              <View className='flex-row justify-between'>
+                <Text className='text-sm text-gray-400'>Nama</Text>
+                <Text>{ ticket?.user?.name }</Text>
+              </View>
+              <View className='flex-row justify-between'>
+                <Text className='text-sm text-gray-400'>Kategori Tiket</Text>
+                <Text> {item?.nama} </Text>
+              </View>
+            </Card>
+          ))
+        ))
+      }
 
       <Card
         className='mx-2 mb-2'
