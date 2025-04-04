@@ -78,18 +78,17 @@ export default function Success() {
               className='mx-2 mb-2'
             >
               <Text className='text-lg font-bold mb-2'>Detail Peserta {j+1}</Text>
-              <View className='flex-row justify-between'>
-                <Text className='text-sm text-gray-400'>Email</Text>
-                <Text>{ ticket.email_penerima }</Text>
-                <Text>{ ticket?.user?.email }</Text>
+              <View className='mb-1'>
+                <Text className='text-sm text-gray-400'>Email :</Text>
+                <Text>{ ticket?.user ? ticket.user?.email : ticket.email_penerima } </Text>
               </View>
-              <View className='flex-row justify-between'>
-                <Text className='text-sm text-gray-400'>Nama</Text>
+              <View className='mb-1'>
+                <Text className='text-sm text-gray-400'>Nama :</Text>
                 <Text>{ ticket?.user?.name }</Text>
               </View>
-              <View className='flex-row justify-between'>
-                <Text className='text-sm text-gray-400'>Kategori Tiket</Text>
-                <Text> {item?.nama} </Text>
+              <View className='mb-1'>
+                <Text className='text-sm text-gray-400'>Kategori Tiket :</Text>
+                <Text>{item?.nama} </Text>
               </View>
             </Card>
           ))
