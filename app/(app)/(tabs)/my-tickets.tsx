@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Image } from 'react-native'
+import { View, Text, ScrollView, Image, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Card } from '@/components/ui/card'
@@ -27,12 +27,13 @@ import {
 } from "@/components/ui/drawer"
 import { Divider } from '@/components/ui/divider'
 import { Input, InputField } from '@/components/ui/input'
-import { Link, router } from 'expo-router'
+import { Link, useRouter } from 'expo-router'
 import { useSession } from '@/hooks/auth/ctx'
 import dayjs from 'dayjs'
 
 export default function MyTickets() {
-  const {session} = useSession();
+  const { session } = useSession();
+  const router = useRouter();
 
   const [myTickets, setMyTickets] = useState<any[]>([])
 
@@ -40,7 +41,7 @@ export default function MyTickets() {
 
   const getMyTickets = async () => {
     try {
-      const res = await fetch(apiUrl+'/ticket-issued', {
+      const res = await fetch(apiUrl + '/ticket-issued', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -55,7 +56,7 @@ export default function MyTickets() {
 
       let json = await res.json();
       console.log(json.data[0]);
-      
+
       setMyTickets(json.data);
       return json.data;
     } catch (error) {
@@ -66,22 +67,32 @@ export default function MyTickets() {
   useEffect(() => {
     getMyTickets();
   }
-  , []);
+    , []);
 
   return (
     <SafeAreaView className='flex-1 bg-slate-100'>
       <ScrollView>
         <View className='mx-2'>
-          <Text className='mb-2'>MyTickets</Text>
+          <Text className='font-bold mb-2 text-2xl'>My Tickets</Text>
           {
-            myTickets.map((ticket, i) => (
-              <TicketCard key={i} ticket={ticket} />
-            ))
+            myTickets.length === 0 ? (
+              <Card className='mt-2 h-96 justify-center items-center'>
+                <Text className='text-center text-xl font-semibold'>Belum ada tiket</Text>
+              </Card>
+            ) :
+              myTickets.map((ticket, i) => (
+                <TouchableOpacity
+                  key={ticket.id}
+                  onPress={() => router.push(`/tickets/${ticket.id}`)}
+                >
+                  <TicketCard key={i} ticket={ticket} />
+                </TouchableOpacity>
+              ))
           }
         </View>
       </ScrollView>
     </SafeAreaView>
-  )
+  );
 }
 
 type BadgeAttributes = {
@@ -96,7 +107,7 @@ function TicketCard({ ticket }: any) {
   const [showDrawer, setShowDrawer] = React.useState(false)
 
   const handleClose = () => setShowActionsheet(false)
-  
+
   const handleOpenDrawer = () => {
     setShowActionsheet(false)
     setShowDrawer(true)
@@ -105,7 +116,7 @@ function TicketCard({ ticket }: any) {
   const event = ticket?.transaction_item?.transaction?.event
   const transactionItem = ticket?.transaction_item
 
-  const badgeAttributes : BadgeAttributes = {
+  const badgeAttributes: BadgeAttributes = {
     'inactive': {
       icon: GlobeIcon,
       color: 'muted',
@@ -139,13 +150,13 @@ function TicketCard({ ticket }: any) {
           <Text className='text-lg font-bold'>{event?.nama}</Text>
           <Text className='font-semibold text-purple-400'>{transactionItem?.nama}</Text>
           <Text className='text-sm text-gray-600'>
-            {dayjs(event?.jadwal_mulai).format('DD MMMM YYYY') }
+            {dayjs(event?.jadwal_mulai).format('DD MMMM YYYY')}
           </Text>
           <Text className='text-sm text-gray-600'>
             {
               event?.lokasi === 'online' ?
-              "Online" :
-              event?.kota
+                "Online" :
+                event?.kota
             }
           </Text>
         </View>
@@ -157,14 +168,14 @@ function TicketCard({ ticket }: any) {
         </View>
       </HStack>
       <VStack>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className='mt-2 mb-2'
-            onPress={() => router.push(`/checkin/${ticket.id}`)}
-          >
-            <ButtonText>Check-In</ButtonText>
-          </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className='mt-2 mb-2'
+          onPress={() => router.push(`/checkin/${ticket.id}`)}
+        >
+          <ButtonText>Check-In</ButtonText>
+        </Button>
         <Button onPress={() => setShowActionsheet(true)}>
           <ButtonText>Lainnya</ButtonText>
         </Button>
@@ -203,20 +214,20 @@ function TicketCard({ ticket }: any) {
               <Divider className='my-2' />
               <HStack className='justify-between mb-2'>
                 <Text>Harga Official</Text>
-                <Text>Rp. {new Intl.NumberFormat('id-ID').format(transactionItem?.harga_satuan) }</Text>
+                <Text>Rp. {new Intl.NumberFormat('id-ID').format(transactionItem?.harga_satuan)}</Text>
               </HStack>
               <HStack className='justify-between mb-2'>
                 <Text>Batas Min</Text>
                 <Text>
                   Rp. {new Intl.NumberFormat('id-ID')
-                        .format(transactionItem?.harga_satuan - (transactionItem?.harga_satuan * 10/100)) }
+                    .format(transactionItem?.harga_satuan - (transactionItem?.harga_satuan * 10 / 100))}
                 </Text>
               </HStack>
               <HStack className='justify-between mb-2'>
                 <Text>Batas Max</Text>
                 <Text>
                   Rp. {new Intl.NumberFormat('id-ID')
-                        .format(transactionItem?.harga_satuan + (transactionItem?.harga_satuan * 10/100))  }
+                    .format(transactionItem?.harga_satuan + (transactionItem?.harga_satuan * 10 / 100))}
                 </Text>
               </HStack>
               <Divider className='my-2' />

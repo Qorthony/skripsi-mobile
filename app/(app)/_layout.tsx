@@ -57,6 +57,9 @@ export default function RootLayout() {
             title: 'Kembali',
             headerShown: true,
           }} />
+          <Stack.Screen name="tickets/[id]" options={{
+            title: 'Tickets',
+          }} />
           <Stack.Screen name="checkin/[id]" options={{
             title: 'Checkin',
           }} />
