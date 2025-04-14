@@ -3,7 +3,7 @@ import { EVENTS_DATA } from '@/constants/events-data';
 import { useSession } from '@/hooks/auth/ctx';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { FlatList, Pressable, Text, View} from 'react-native';
+import { FlatList, Pressable, Text, View, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 type Event = {
@@ -23,6 +23,7 @@ export default function HomeScreen() {
   const apiUrl: string = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000/api';
 
   const [events, setEvents] = useState<Event[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   const fetchEvents = async () => {
     try {
@@ -44,6 +45,12 @@ export default function HomeScreen() {
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchEvents();
+    setRefreshing(false);
   };
 
   useEffect(() => {
@@ -79,6 +86,12 @@ export default function HomeScreen() {
             </Pressable>
           )}
           keyExtractor={item => item.id.toString()}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+            />
+          }
         />
       </SafeAreaView>
     </View>
