@@ -20,6 +20,7 @@ import { z } from 'zod'
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { rupiahFormat } from '@/helpers/currency';
+import { dateIdFormat } from '@/helpers/date';
 
 const ParticipantSchema = z.object({
   id: z.number(),
@@ -189,7 +190,7 @@ export default function Transaction() {
           <View className='flex-row justify-between'>
             <View className='flex-row'>
               <Text className='text-sm text-gray-600'>{eventLocation} | </Text>
-              <Text className='text-sm text-gray-600'>{dayjs(transaction?.event?.jadwal_mulai).format('DD MMMM YYYY')}</Text>
+              <Text className='text-sm text-gray-600'>{dateIdFormat(transaction?.event?.jadwal_mulai)}</Text>
             </View>
           </View>
         </Card>

@@ -6,6 +6,7 @@ import { Button, ButtonText } from '@/components/ui/button'
 import { router } from 'expo-router'
 import { Card } from '@/components/ui/card'
 import { useSession } from '@/hooks/auth/ctx'
+import { Spinner } from '@/components/ui/spinner'
 
 export default function VerifyOTP() {
     const { signIn, user } = useSession();
@@ -15,8 +16,10 @@ export default function VerifyOTP() {
     const apiUrl: string = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000/api';
 
     const [otp, setOtp] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const verifyOTP = async () => {
+        setLoading(true);
         try {
             const res = await fetch(apiUrl+'/login/verifyOtp', {
                 method: 'POST',
@@ -40,6 +43,8 @@ export default function VerifyOTP() {
             router.replace('/');
         } catch (error) {
             console.error(error);
+        } finally {
+            setLoading(false);
         }
     }
     
@@ -64,8 +69,8 @@ export default function VerifyOTP() {
                         <InputField placeholder='123456' onChangeText={setOtp} />
                     </Input>
                 </View>
-                <Button onPress={verifyOTP}>
-                    <ButtonText>Verify</ButtonText>
+                <Button onPress={verifyOTP} disabled={loading}>
+                    {loading ? <Spinner /> : <ButtonText>Verify</ButtonText>}
                 </Button>
                 <Button variant='link' className='mt-4'>
                     <ButtonText>Resend OTP</ButtonText>

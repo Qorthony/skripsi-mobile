@@ -9,6 +9,7 @@ import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { ChevronRightIcon } from '@/components/ui/icon';
 import { useSession } from '@/hooks/auth/ctx';
 import { rupiahFormat } from '@/helpers/currency';
+import { Spinner } from '@/components/ui/spinner';
 
 type selectedTicket = {
     id: number;
@@ -39,10 +40,13 @@ export default function DetailEvent() {
     const {session} = useSession();
 
     const [event, setEvent] = useState<EventType | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const apiUrl: string = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000/api';
 
     const fetchEvent = async () => {
+        setLoading(true);
         try {
             const res = await fetch(apiUrl+'/events/'+id, {
                 method: 'GET',
@@ -61,6 +65,8 @@ export default function DetailEvent() {
             setEvent(json.data);
         } catch (error) {
             console.error(error);
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -80,13 +86,11 @@ export default function DetailEvent() {
     const total = selected.reduce((acc, item) => acc + (item.price * item.quantity), 0);
 
     const handleBuyTicket = async () => {
-        console.log(selected);
-        // router.push('/transactions')
-
-        console.log(apiUrl+'/transactions');
-        
-
+        setIsProcessing(true);
         try {
+            console.log(selected);
+            console.log(apiUrl+'/transactions');
+
             const res = await fetch(apiUrl+'/transactions', {
                 method: 'POST',
                 headers: {
@@ -105,87 +109,102 @@ export default function DetailEvent() {
 
             const json = await res.json();
             console.log("transaction id after detail event : "+json.data.id);
-            
+
             router.push(`/transactions/${json.data.id}`);
         } catch (error) {
             console.error(error);
+        } finally {
+            setIsProcessing(false);
         }
     }
 
+    const isDisabled = selected.length === 0;
+
     return (
         <SafeAreaView className='flex-1 bg-white'>
-            <View className='flex-1 bg-white'>
-                <Image
-                    source={DUMMY_POSTER}
-                    className='w-full h-48 rounded-lg'
-                />
-                <View className='px-4 py-2'>
-                    <Text className='text-xl font-bold'>{event?.nama}</Text>
-                    <Text className='text-sm text-gray-600'>{event? dateIdFormat(event?.jadwal_mulai):''}</Text>
-                    {
-                        event?.location === 'online' ?
-                            <Text className='text-sm text-gray-600'>{event?.location}</Text> :
-                            <Text className='text-sm text-gray-600'>{event?.kota}</Text>
-                    }
+            {loading ? (
+                <View className='flex-1 justify-center items-center'>
+                    <Spinner />
                 </View>
-                
-                <View className='flex-row justify-end px-4 pb-2'>
-                    <Button size="sm" variant="link" action="primary" onPress={() => router.push(`/events/${id}/secondary-tickets`)}>
-                        <ButtonText>Secondary Ticket</ButtonText>
-                        <ButtonIcon as={ChevronRightIcon} />
-                    </Button>
-                </View>
-
-                <View className='bg-gray-100 d-flex justify-around flex-row'>
-                    <Pressable
-                        className={`flex-grow py-3 ${activeTab === 'deskripsi' ? activeTabClassName : ''}`}
-                        onPress={() => setActiveTab('deskripsi')}
-                    >
-                        <Text className='text-center'>Deskripsi</Text>
-                    </Pressable>
-                    <Pressable
-                        className={`flex-grow py-3 ${activeTab === 'tiket' ? activeTabClassName : ''}`}
-                        onPress={() => setActiveTab('tiket')}
-                    >
-                        <Text className='text-center'>Tiket</Text>
-                    </Pressable>
-                </View>
-                <View className='flex-1 p-4'>
-                    {
-                        activeTab === 'deskripsi' ?
-                            <Text>{event?.description}</Text> 
-                            :<FlatList
-                                className='mb-16'
-                                showsVerticalScrollIndicator={false}
-                                data={event?.tickets}
-                                renderItem={({ item }) => (
-                                    <TicketCard
-                                        selected={selected}
-                                        setSelected={setSelected} 
-                                        id={item.id}
-                                        type={item.nama}
-                                        price={item.harga}
-                                        description={item.keterangan}
-                                    />
-                                )}
-                                keyExtractor={item => item.id.toString()}
-                            />
-                    }
-                </View>
-
-                <AbsoluteBottomView>
-                    <View className='flex-row justify-between'>
-                        <Text>Total</Text>
-                        <Text>{rupiahFormat(total)}</Text>
+            ) : (
+                <View className='flex-1 bg-white'>
+                    <Image
+                        source={DUMMY_POSTER}
+                        className='w-full h-48 rounded-lg'
+                    />
+                    <View className='px-4 py-2'>
+                        <Text className='text-xl font-bold'>{event?.nama}</Text>
+                        <Text className='text-sm text-gray-600'>{event? dateIdFormat(event?.jadwal_mulai):''}</Text>
+                        {
+                            event?.location === 'online' ?
+                                <Text className='text-sm text-gray-600'>{event?.location}</Text> :
+                                <Text className='text-sm text-gray-600'>{event?.kota}</Text>
+                        }
                     </View>
-                    <Pressable 
-                        className='bg-purple-600 rounded-lg p-2'
-                        onPress={handleBuyTicket}
-                    >
-                        <Text className='text-white text-center'>Beli Tiket</Text>
-                    </Pressable>
-                </AbsoluteBottomView>
-            </View>
+                    
+                    <View className='flex-row justify-end px-4 pb-2'>
+                        <Button size="sm" variant="link" action="primary" onPress={() => router.push(`/events/${id}/secondary-tickets`)}>
+                            <ButtonText>Secondary Ticket</ButtonText>
+                            <ButtonIcon as={ChevronRightIcon} />
+                        </Button>
+                    </View>
+
+                    <View className='bg-gray-100 d-flex justify-around flex-row'>
+                        <Pressable
+                            className={`flex-grow py-3 ${activeTab === 'deskripsi' ? activeTabClassName : ''}`}
+                            onPress={() => setActiveTab('deskripsi')}
+                        >
+                            <Text className='text-center'>Deskripsi</Text>
+                        </Pressable>
+                        <Pressable
+                            className={`flex-grow py-3 ${activeTab === 'tiket' ? activeTabClassName : ''}`}
+                            onPress={() => setActiveTab('tiket')}
+                        >
+                            <Text className='text-center'>Tiket</Text>
+                        </Pressable>
+                    </View>
+                    <View className='flex-1 p-4'>
+                        {
+                            activeTab === 'deskripsi' ?
+                                <Text>{event?.description}</Text> 
+                                :<FlatList
+                                    className='mb-16'
+                                    showsVerticalScrollIndicator={false}
+                                    data={event?.tickets}
+                                    renderItem={({ item }) => (
+                                        <TicketCard
+                                            selected={selected}
+                                            setSelected={setSelected} 
+                                            id={item.id}
+                                            type={item.nama}
+                                            price={item.harga}
+                                            description={item.keterangan}
+                                        />
+                                    )}
+                                    keyExtractor={item => item.id.toString()}
+                                />
+                        }
+                    </View>
+
+                    <AbsoluteBottomView>
+                        <View className='flex-row justify-between'>
+                            <Text>Total</Text>
+                            <Text>{rupiahFormat(total)}</Text>
+                        </View>
+                        <Pressable 
+                            className={`bg-purple-600 rounded-lg p-2 ${isDisabled || isProcessing ? 'opacity-50' : ''}`}
+                            onPress={handleBuyTicket}
+                            disabled={isDisabled || isProcessing}
+                        >
+                            {isProcessing ? (
+                                <Spinner />
+                            ) : (
+                                <Text className='text-white text-center'>Beli Tiket</Text>
+                            )}
+                        </Pressable>
+                    </AbsoluteBottomView>
+                </View>
+            )}
         </SafeAreaView>
     )
 }
@@ -239,7 +258,7 @@ function TicketCard({
         <View className='bg-slate-200 rounded-lg p-2 my-2'>
             <View>
                 <Text className='font-bold'>{type}</Text>
-                <Text className='text-sm'>Rp. {rupiahFormat(price)}</Text>
+                <Text className='text-sm'>{rupiahFormat(price)}</Text>
                 <Text className='text-sm text-gray-600'>{description}</Text>
                 <View className='items-end'>
                     <CounterButton

@@ -1,4 +1,5 @@
 import FullWidthEventCard from '@/components/FullWidthEventCard';
+import { Spinner } from '@/components/ui/spinner';
 import { EVENTS_DATA } from '@/constants/events-data';
 import { useSession } from '@/hooks/auth/ctx';
 import { router } from 'expo-router';
@@ -24,10 +25,12 @@ export default function HomeScreen() {
 
   const [events, setEvents] = useState<Event[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const fetchEvents = async () => {
+    setLoading(true);
     try {
-      const res = await fetch(apiUrl+'/events', {
+      const res = await fetch(apiUrl + '/events', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -40,10 +43,11 @@ export default function HomeScreen() {
       }
 
       const data = await res.json();
-      
       setEvents(data.data);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,41 +63,47 @@ export default function HomeScreen() {
   
   return (
     <View className='flex-1 bg-white'>
-      <SafeAreaView className='px-2 mb-16'>
-        <View className='py-4'>
-          <Text
-            onPress={() => {signOut()}}
-            className='font-bold text-xl text-red-500 ms-auto me-0'
-          >
-            Logout
-          </Text>
-          <Text className='font-bold text-xl'>
-            Events yang akan datang
-          </Text>
+      {loading ? (
+        <View className='flex-1 justify-center items-center'>
+          <Spinner size='large' />
         </View>
-        <FlatList
-          data={events}
-          renderItem={({ item }) => (
-            <Pressable onPress={() => router.push(`/events/${item.id}`)}>
-              <FullWidthEventCard
-                name={item.nama} 
-                date={item.jadwal_mulai} 
-                location={item.lokasi} 
-                city={item.kota} 
-                description={item.deskripsi || ''} 
-                image={EVENTS_DATA[0].image}
+      ) : (
+        <SafeAreaView className='px-2 mb-16'>
+          <View className='py-4'>
+            <Text
+              onPress={() => {signOut()}}
+              className='font-bold text-xl text-red-500 ms-auto me-0'
+            >
+              Logout
+            </Text>
+            <Text className='font-bold text-xl'>
+              Events yang akan datang
+            </Text>
+          </View>
+          <FlatList
+            data={events}
+            renderItem={({ item }) => (
+              <Pressable onPress={() => router.push(`/events/${item.id}`)}>
+                <FullWidthEventCard
+                  name={item.nama} 
+                  date={item.jadwal_mulai} 
+                  location={item.lokasi} 
+                  city={item.kota} 
+                  description={item.deskripsi || ''} 
+                  image={EVENTS_DATA[0].image}
+                />
+              </Pressable>
+            )}
+            keyExtractor={item => item.id.toString()}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
               />
-            </Pressable>
-          )}
-          keyExtractor={item => item.id.toString()}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-            />
-          }
-        />
-      </SafeAreaView>
+            }
+          />
+        </SafeAreaView>
+      )}
     </View>
   );
 }

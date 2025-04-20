@@ -77,6 +77,14 @@ export default function MyTickets() {
     getMyTickets();
   }, []);
 
+  if (myTickets.length === 0 && !refreshing) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <Spinner size="large" />
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView className='flex-1 bg-slate-100'>
       <ScrollView

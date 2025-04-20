@@ -1,18 +1,20 @@
 import React from 'react';
-import { View, Text, FlatList } from 'react-native';
+import { View, Text, FlatList, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card } from '@/components/ui/card';
 import { Button, ButtonText } from '@/components/ui/button';
 import { useSession } from '@/hooks/auth/ctx';
 import { Badge, BadgeText } from '@/components/ui/badge';
+import { Spinner } from '@/components/ui/spinner';
 import dayjs from 'dayjs';
 import { rupiahFormat } from '@/helpers/currency';
 import { dateIdFormat } from '@/helpers/date';
+import { router } from 'expo-router';
 
 const apiUrl: string = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 interface Transaction {
-  id: number;
+  id: string;
   event: {
     nama: string;
   };
@@ -27,7 +29,7 @@ export default function TransactionList() {
 
   const [transactions, setTransactions] = React.useState<Transaction[]>([]);
   const [loading, setLoading] = React.useState(false);
-  // const [error, setError,] = React.useState(null);
+  const [refreshing, setRefreshing] = React.useState(false);
 
   const fetchTransactions = async () => {
     setLoading(true);
@@ -55,6 +57,12 @@ export default function TransactionList() {
     }
   }
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchTransactions();
+    setRefreshing(false);
+  };
+
   const statusColor = (status: string) => {
     switch (status) {
       case 'pending':
@@ -70,12 +78,31 @@ export default function TransactionList() {
     }
   };
 
+  const getRouterPath = (status: string, id: string) => {
+    switch (status) {
+      case 'pending':
+        return router.push(`/transactions/${id}`);
+      case 'payment':
+        return router.push(`/transactions/${id}/payment`);
+      case 'success':
+        return router.push(`/transactions/${id}/success`);
+      case 'failed':
+        return null;
+      default:
+        return null;
+    }
+  };
+
   React.useEffect(() => {
     fetchTransactions();
   }, []);
 
   if (loading) {
-    return <Text>Loading...</Text>;
+    return (
+      <View className="flex-1 justify-center items-center">
+        <Spinner size="large" />
+      </View>
+    );
   }
 
   if (transactions.length === 0) {
@@ -101,17 +128,27 @@ export default function TransactionList() {
                   <Text className="text-sm text-gray-600">{Number(item?.total_pembayaran) === 0 ? 'Gratis' : rupiahFormat(item?.total_pembayaran)}</Text>
                 </View>
                 <Button
+                  size="sm"
                   variant="solid"
                   action="primary"
-                  onPress={() => {
-                    // Navigate to transaction detail page
-                  }}
+                  onPress={() => getRouterPath(item?.status, item?.id)}
                 >
-                  <ButtonText>Detail</ButtonText>
+                  <ButtonText>
+                    {
+                      item?.status === 'pending' || item?.status === 'payment' ?
+                      'Lanjutkan' : 'Lihat'
+                    }
+                  </ButtonText>
                 </Button>
               </View>
             </Card>
           )}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+            />
+          }
         />
       </View>
     </SafeAreaView>

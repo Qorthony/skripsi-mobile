@@ -6,7 +6,7 @@ import { Divider } from '@/components/ui/divider'
 import { Button, ButtonText } from '@/components/ui/button'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useSession } from '@/hooks/auth/ctx'
-import dayjs from 'dayjs'
+import { dateIdFormat } from '@/helpers/date';
 import { PaymentMethods } from '@/constants/payment-method'
 import { rupiahFormat } from '@/helpers/currency';
 
@@ -54,7 +54,7 @@ export default function Success() {
       <Card className='mx-2 mb-2 justify-center'>
         <Text className='text-xl font-semibold text-center'>Pemesanan Berhasil</Text>
         <Text className='text-center'> {transaction?.event?.nama} </Text>
-        <Text className='text-center'>{eventLocation} - {dayjs(transaction?.event?.jadwal_mulai).format('DD MMMM YYYY')}</Text>
+        <Text className='text-center'>{eventLocation} - {dateIdFormat(transaction?.event?.jadwal_mulai)}</Text>
       </Card>
 
       <Card
@@ -100,13 +100,25 @@ export default function Success() {
         className='mx-2 mb-2'
       >
         <View className='flex-row justify-around'>
-          <Button size="md" variant="outline" action="primary">
+          <Button 
+            size="md" 
+            variant="outline" 
+            action="primary"
+            onPress={() => {
+              router.push('/transactions')
+            }}
+          >
             <ButtonText>Daftar Transaksi</ButtonText>
           </Button>
-          <Button size="md" variant="solid" action="primary" onPress={() => {
-            console.log('Tikat Saya');
-            router.push('/my-tickets')
-          }}>
+          <Button 
+            size="md" 
+            variant="solid" 
+            action="primary" 
+            onPress={() => {
+              console.log('Tikat Saya');
+              router.push('/my-tickets')
+            }}
+          >
             <ButtonText>Tiket Saya</ButtonText>
           </Button>
         </View>

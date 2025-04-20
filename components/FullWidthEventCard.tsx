@@ -1,6 +1,6 @@
 import { View, Text, Image } from 'react-native'
 import React from 'react'
-import dayjs from 'dayjs'
+import { dateIdFormat } from '@/helpers/date';
 import { EventTypes } from '@/constants/events-data'
 
 type PropTypes = {
@@ -30,7 +30,7 @@ export default function FullWidthEventCard({
                     {name}
                 </Text>
                 <Text className='text-sm'>
-                    {dayjs(date).format('DD MMMM YYYY')}
+                    {dateIdFormat(date)}
                 </Text>
                 <Text className='text-sm'>
                     {location=='online'?'Online':city}

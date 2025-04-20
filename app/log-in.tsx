@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Divider } from '@/components/ui/divider';
 import { HStack } from '@/components/ui/hstack';
 import { Input, InputField } from '@/components/ui/input';
+import { Spinner } from '@/components/ui/spinner';
 import { useSession } from '@/hooks/auth/ctx';
 import { Link, Redirect, router } from 'expo-router';
 import { useState } from 'react';
@@ -23,12 +24,13 @@ export default function Login() {
     
     const logIn = async () => {
         console.log('login button clicked');
-        
+        setLoading(true);
         try {
             const res = await fetch(apiUrl+'/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                 },
                 body: JSON.stringify({
                     email: email,
@@ -36,7 +38,8 @@ export default function Login() {
             });
 
             if (!res.ok) {
-                throw new Error(`Response status: ${res.status}`);
+                const json = await res.json();
+                throw new Error(`${json.message}`);
             }
 
             const data = await res.json();
@@ -46,6 +49,8 @@ export default function Login() {
             router.push('/verify-otp');
         } catch (error) {
             console.error(error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -88,8 +93,8 @@ export default function Login() {
                     </Input>
                 </View>
                 
-                <Button onPress={logIn}>
-                    <ButtonText>Login</ButtonText>
+                <Button onPress={logIn} disabled={loading}>
+                    {loading ? <Spinner /> : <ButtonText>Login</ButtonText>}
                 </Button>
 
                 <Button variant='link' className='mt-4' onPress={() => {
