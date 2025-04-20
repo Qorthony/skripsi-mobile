@@ -2,12 +2,13 @@ import { View, Text, SafeAreaView, Image, Pressable, FlatList } from 'react-nati
 import React, { useEffect, useState } from 'react'
 import { router, useLocalSearchParams } from 'expo-router'
 import { DUMMY_POSTER, EVENTS_DATA } from '@/constants/events-data';
-import dayjs from 'dayjs';
+import { dateIdFormat } from '@/helpers/date';
 import CounterButton from '@/components/CounterButton';
 import AbsoluteBottomView from '@/components/AbsoluteBottomView';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { ChevronRightIcon } from '@/components/ui/icon';
 import { useSession } from '@/hooks/auth/ctx';
+import { rupiahFormat } from '@/helpers/currency';
 
 type selectedTicket = {
     id: number;
@@ -120,7 +121,7 @@ export default function DetailEvent() {
                 />
                 <View className='px-4 py-2'>
                     <Text className='text-xl font-bold'>{event?.nama}</Text>
-                    <Text className='text-sm text-gray-600'>{dayjs(event?.jadwal_mulai).format('DD MMMM YYYY')}</Text>
+                    <Text className='text-sm text-gray-600'>{event? dateIdFormat(event?.jadwal_mulai):''}</Text>
                     {
                         event?.location === 'online' ?
                             <Text className='text-sm text-gray-600'>{event?.location}</Text> :
@@ -175,7 +176,7 @@ export default function DetailEvent() {
                 <AbsoluteBottomView>
                     <View className='flex-row justify-between'>
                         <Text>Total</Text>
-                        <Text>Rp. {new Intl.NumberFormat('id-ID').format(total)}</Text>
+                        <Text>{rupiahFormat(total)}</Text>
                     </View>
                     <Pressable 
                         className='bg-purple-600 rounded-lg p-2'
@@ -238,7 +239,7 @@ function TicketCard({
         <View className='bg-slate-200 rounded-lg p-2 my-2'>
             <View>
                 <Text className='font-bold'>{type}</Text>
-                <Text className='text-sm'>Rp. {new Intl.NumberFormat('id-ID').format(price)}</Text>
+                <Text className='text-sm'>Rp. {rupiahFormat(price)}</Text>
                 <Text className='text-sm text-gray-600'>{description}</Text>
                 <View className='items-end'>
                     <CounterButton

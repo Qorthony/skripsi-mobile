@@ -9,6 +9,7 @@ import { router } from 'expo-router'
 import { useLocalSearchParams } from 'expo-router'
 import { useSession } from '@/hooks/auth/ctx'
 import { PaymentMethods } from '@/constants/payment-method'
+import { rupiahFormat } from '@/helpers/currency';
 
 export default function Payment() {
   const { id } = useLocalSearchParams();
@@ -94,7 +95,7 @@ export default function Payment() {
               <Pressable onPress={() => {
                 copyToClipboard(transaction?.total_pembayaran)
               }}>
-                <Text>Rp. { new Intl.NumberFormat('id-ID').format(transaction?.total_pembayaran) } <Icon as={CopyIcon} size='xs' /> </Text>
+                <Text>{ rupiahFormat(transaction?.total_pembayaran) } <Icon as={CopyIcon} size='xs' /> </Text>
               </Pressable>
             </View>
           </Card>

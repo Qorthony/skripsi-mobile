@@ -19,6 +19,7 @@ import { VStack } from '@/components/ui/vstack'
 import { z } from 'zod'
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { rupiahFormat } from '@/helpers/currency';
 
 const ParticipantSchema = z.object({
   id: z.number(),
@@ -267,7 +268,7 @@ export default function Transaction() {
                   <Text className='text-sm'>{item.nama}</Text>
                   <Text className='text-gray-400'>{item.jumlah}x</Text>
                 </View>
-                <Text className='text-sm'>Rp. {new Intl.NumberFormat('id-ID').format(item.total_harga) }</Text>
+                <Text className='text-sm'>{rupiahFormat(item.total_harga)}</Text>
               </View>
             ))
           }
@@ -280,7 +281,7 @@ export default function Transaction() {
           <Divider className='my-2' />
           <View className='flex-row justify-between'>
             <Text className='font-semibold'>Total Pembayaran</Text>
-            <Text>Rp. {new Intl.NumberFormat('id-ID').format(paymentTotal)}</Text>
+            <Text>{rupiahFormat(paymentTotal)}</Text>
           </View>
         </Card>
 
@@ -298,7 +299,7 @@ export default function Transaction() {
               </Pressable>
             }
             <View className='flex-row'>
-              <Text className='font-bold'>Rp. {new Intl.NumberFormat('id-ID').format(paymentTotal)}</Text>
+              <Text className='font-bold'>{rupiahFormat(paymentTotal)}</Text>
             </View>
           </View>
           {

@@ -8,6 +8,7 @@ import { router, useLocalSearchParams } from 'expo-router'
 import { useSession } from '@/hooks/auth/ctx'
 import dayjs from 'dayjs'
 import { PaymentMethods } from '@/constants/payment-method'
+import { rupiahFormat } from '@/helpers/currency';
 
 export default function Success() {
   const { id } = useLocalSearchParams();
@@ -66,7 +67,7 @@ export default function Success() {
         </View>
         <View className='flex-row justify-between'>
           <Text className='text-sm text-gray-400'>Nominal Pembayaran</Text>
-          <Text>Rp. { new Intl.NumberFormat('id-ID').format(transaction?.total_pembayaran) }</Text>
+          <Text>{rupiahFormat(transaction?.total_pembayaran)}</Text>
         </View>
       </Card>
 

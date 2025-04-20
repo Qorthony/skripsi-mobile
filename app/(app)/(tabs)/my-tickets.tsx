@@ -28,10 +28,11 @@ import {
 import { Divider } from '@/components/ui/divider'
 import { Input, InputField } from '@/components/ui/input'
 import { useSession } from '@/hooks/auth/ctx'
-import dayjs from 'dayjs'
+import { dateIdFormat } from '@/helpers/date';
 import { router } from 'expo-router'
 import { useForm, Controller } from 'react-hook-form';
 import { Spinner } from '@/components/ui/spinner';
+import { rupiahFormat } from '@/helpers/currency';
 
 const apiUrl: string = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000/api';
 
@@ -164,7 +165,7 @@ function TicketCard({ ticket }: any) {
           <Text className='text-lg font-bold'>{event?.nama}</Text>
           <Text className='font-semibold text-purple-400'>{transactionItem?.nama}</Text>
           <Text className='text-sm text-gray-600'>
-            {dayjs(event?.jadwal_mulai).format('DD MMMM YYYY')}
+            {dateIdFormat(event?.jadwal_mulai)}
           </Text>
           <Text className='text-sm text-gray-600'>
             {
@@ -305,15 +306,15 @@ function ResaleDrawer({
           <Divider className='my-2' />
           <HStack className='justify-between mb-2'>
             <Text>Harga Official</Text>
-            <Text>Rp. {new Intl.NumberFormat('id-ID').format(transactionItem?.harga_satuan)}</Text>
+            <Text>{rupiahFormat(transactionItem?.harga_satuan)}</Text>
           </HStack>
           <HStack className='justify-between mb-2'>
             <Text>Batas Min</Text>
-            <Text>Rp. {new Intl.NumberFormat('id-ID').format(minPrice)}</Text>
+            <Text>{rupiahFormat(minPrice)}</Text>
           </HStack>
           <HStack className='justify-between mb-2'>
             <Text>Batas Max</Text>
-            <Text>Rp. {new Intl.NumberFormat('id-ID').format(maxPrice)}</Text>
+            <Text>{rupiahFormat(maxPrice)}</Text>
           </HStack>
           <Divider className='my-2' />
           <VStack className='justify-between mb-2'>
@@ -325,7 +326,7 @@ function ResaleDrawer({
                 required: 'Harga Jual is required',
                 validate: {
                   isNumber: value => !isNaN(Number(value)) || 'Harga Jual harus berupa angka',
-                  withinRange: value => (Number(value) >= minPrice && Number(value) <= maxPrice) || `Harga Jual harus antara Rp. ${new Intl.NumberFormat('id-ID').format(minPrice)} dan Rp. ${new Intl.NumberFormat('id-ID').format(maxPrice)}`
+                  withinRange: value => (Number(value) >= minPrice && Number(value) <= maxPrice) || `Harga Jual harus antara ${rupiahFormat(minPrice)} dan ${rupiahFormat(maxPrice)}`
                 }
               }}
               render={({ field: { onChange, onBlur, value } }) => (
