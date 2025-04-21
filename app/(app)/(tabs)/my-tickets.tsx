@@ -43,6 +43,7 @@ export default function MyTickets() {
   const [refreshing, setRefreshing] = useState(false);
 
   const getMyTickets = async () => {
+    setRefreshing(true);
     try {
       const res = await fetch(apiUrl + '/ticket-issued', {
         method: 'GET',
@@ -54,6 +55,7 @@ export default function MyTickets() {
       });
 
       if (!res.ok) {
+        setRefreshing(false);
         throw new Error(`Response status: ${res.status}`);
       }
 
@@ -61,23 +63,23 @@ export default function MyTickets() {
       console.log(json.data[0]);
 
       setMyTickets(json.data);
+      setRefreshing(false);
       return json.data;
     } catch (error) {
       console.error(error);
+      setRefreshing(false);
     }
   };
 
   const onRefresh = async () => {
-    setRefreshing(true);
     await getMyTickets();
-    setRefreshing(false);
   };
 
   useEffect(() => {
     getMyTickets();
   }, []);
 
-  if (myTickets.length === 0 && !refreshing) {
+  if (refreshing) {
     return (
       <View className="flex-1 justify-center items-center">
         <Spinner size="large" />

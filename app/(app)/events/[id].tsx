@@ -10,6 +10,7 @@ import { ChevronRightIcon } from '@/components/ui/icon';
 import { useSession } from '@/hooks/auth/ctx';
 import { rupiahFormat } from '@/helpers/currency';
 import { Spinner } from '@/components/ui/spinner';
+import dayjs from 'dayjs';
 
 type selectedTicket = {
     id: number;
@@ -32,6 +33,8 @@ interface TicketTypes {
     nama: string;
     harga: number;
     keterangan: string;
+    waktu_buka?: string;
+    waktu_tutup: string;
 }
 
 export default function DetailEvent() {
@@ -179,6 +182,8 @@ export default function DetailEvent() {
                                             type={item.nama}
                                             price={item.harga}
                                             description={item.keterangan}
+                                            date_open={item?.waktu_buka}
+                                            date_close={item?.waktu_tutup}
                                         />
                                     )}
                                     keyExtractor={item => item.id.toString()}
@@ -214,6 +219,8 @@ interface TicketCardProps {
     type: string;
     price: number;
     description: string;
+    date_open?: string;
+    date_close: string;
     selected: selectedTicket[];
     setSelected: (value: any) => void;
 }
@@ -223,6 +230,8 @@ function TicketCard({
     type, 
     price, 
     description,
+    date_open,
+    date_close,
     selected,
     setSelected
 }: TicketCardProps) {
@@ -253,18 +262,24 @@ function TicketCard({
         }
         setSelected([...selected, { id, name: type, price, quantity: 1 }]);
     }
+
+    const isComingSoon = () : boolean => dayjs(date_open).isAfter(dayjs()) || dayjs(date_open).isSame(dayjs(), 'day');
+    const isOver = () : boolean => dayjs(date_close).isBefore(dayjs()) || dayjs(date_close).isSame(dayjs(), 'day');
     
     return (
         <View className='bg-slate-200 rounded-lg p-2 my-2'>
             <View>
                 <Text className='font-bold'>{type}</Text>
                 <Text className='text-sm'>{rupiahFormat(price)}</Text>
-                <Text className='text-sm text-gray-600'>{description}</Text>
+                {description && <Text className='text-sm text-gray-600'>{description}</Text>}
+                {isComingSoon() && <Text className='text-sm text-red-500'>Belum buka</Text>}
+                {isOver() && <Text className='text-sm text-red-500'>Tutup</Text>}
                 <View className='items-end'>
                     <CounterButton
                         onSubstract={handleSubstract}
                         onAdd={handleAdd}
                         value={selected.find((item: any) => item.id === id)?.quantity || 0}
+                        disabled={isComingSoon() || isOver()}
                     />
                 </View>
             </View>
