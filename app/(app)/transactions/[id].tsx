@@ -21,6 +21,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { rupiahFormat } from '@/helpers/currency';
 import { dateIdFormat } from '@/helpers/date';
+import { Spinner } from '@/components/ui/spinner'
 
 const ParticipantSchema = z.object({
   id: z.number(),
@@ -126,8 +127,11 @@ export default function Transaction() {
 
   const [showModal, setShowModal] = useState(0);
 
+  const [loading, setLoading] = useState(false);
+
   const postUpdateTransaction = async () => {
     try {
+      setLoading(true);
       const data = {
         metode_pembayaran: selectedPayment,
         ticket_issueds: 
@@ -159,6 +163,8 @@ export default function Transaction() {
       router.push(`/transactions/${id}/payment`)
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -313,10 +319,15 @@ export default function Transaction() {
             </Pressable>
             :
             <Pressable
-              className='bg-purple-600 rounded-lg p-2 justify-center'
+              className={`${loading ? 'bg-purple-400' : 'bg-purple-600'} rounded-lg p-2 justify-center`}
               onPress={postUpdateTransaction}
+              disabled={loading}
             >
-              <Text className='text-white text-center'>Bayar Sekarang</Text>
+              {
+                loading ?
+                <Spinner size="small" color="white" /> :
+                <Text className='text-white text-center'>Bayar Sekarang</Text>
+              }
             </Pressable>
           }
         </View>

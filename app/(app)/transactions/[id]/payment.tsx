@@ -17,6 +17,7 @@ export default function Payment() {
   const {session} = useSession();
 
   const [transaction, setTransaction] = useState<any>(null);
+  const [checkInterval, setCheckInterval] = useState<NodeJS.Timeout | null>(null);
 
   const apiUrl: string = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000/api';
 
@@ -46,6 +47,20 @@ export default function Payment() {
 
   useEffect(() => {
     getTransaction();
+    
+    // Set up interval to check payment status every 5 seconds
+    const interval = setInterval(() => {
+      handleCheckStatus();
+    }, 5000);
+    
+    setCheckInterval(interval);
+    
+    // Clean up interval on unmount
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
   }, [id]);
 
   const copyToClipboard = async (value:string) => {
@@ -59,7 +74,11 @@ export default function Payment() {
 
     const transactionData = await getTransaction();
 
-    if (transactionData.status === 'success') {
+    if (transactionData && transactionData.status === 'success') {
+      // Clear interval when payment is successful
+      if (checkInterval) {
+        clearInterval(checkInterval);
+      }
       router.replace(`/transactions/${id}/success`);
     }
   }
