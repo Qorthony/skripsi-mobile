@@ -68,7 +68,6 @@ export default function MyTickets() {
       }
 
       let json = await res.json();
-      console.log(json.data[0]);
 
       setMyTickets(json.data);
       setRefreshing(false);
@@ -267,7 +266,6 @@ function TicketCardMainButton({ ticket }: any) {
       }
 
       let json = await res.json();
-      console.log(json);
       
       // Setelah berhasil membatalkan resale, refresh daftar tiket
       refreshTickets();
@@ -278,14 +276,15 @@ function TicketCardMainButton({ ticket }: any) {
       console.error(error);
     }
     finally {
-      setLoading(false);
+      setLoading(false);    
     }
   }
 
   const ActivateTicket = (ticketIssuedId: string) => {
     BackendRequest({
-      endpoint: `ticket-issued/${ticketIssuedId}`,
+      endpoint: `/ticket-issued/${ticketIssuedId}`,
       method: 'PATCH',
+      token: session,
       onStart: () => {
         console.log('Activate Ticket:', ticket.id);
         setLoading(true);
@@ -319,9 +318,7 @@ function TicketCardMainButton({ ticket }: any) {
   }
   else if (ticket.status === 'inactive') {
     buttonText = 'Aktifkan Tiket'
-    buttonAction = () => {
-      ActivateTicket(ticket.id)
-    }
+    buttonAction = () => ActivateTicket(ticket.id)
   }
   else if (ticket.status === 'active') {
     buttonText = 'Tiket Aktif'
@@ -389,7 +386,6 @@ function ResaleDrawer({
       }
 
       let json = await res.json();
-      console.log(json.data);
 
       // Setelah operasi resale berhasil, refresh daftar tiket
       setShowDrawer(false);

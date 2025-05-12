@@ -81,9 +81,9 @@ export default function Transaction() {
     for (let i = 0; i < transaction?.jumlah_tiket; i++) {
       participantStructure.push({
         id: i+1,
-        name: '',
-        email: '',
-        ticket_id: '',
+        name: i==0?transaction?.user.name:'',
+        email: i==0?transaction?.user.email:'',
+        ticket_id: transaction?.jumlah_tiket===1?transaction?.transaction_items[0]?.ticket_issueds[0]?.id:'',
         pemesan: i === 0
       })
     }
@@ -499,6 +499,7 @@ function FormModal({
                       className='mb-2'
                       variant='underlined'
                       size='sm'
+                      isDisabled={participant?.pemesan}
                     >
                       <InputField 
                         placeholder='Email'
