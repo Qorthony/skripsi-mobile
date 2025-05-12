@@ -30,7 +30,7 @@ export default function HomeScreen() {
   const fetchEvents = async () => {
     setLoading(true);
     try {
-      const res = await fetch(apiUrl + '/events', {
+      const res = await fetch(apiUrl + '/events?ongoing=true', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -82,6 +82,22 @@ export default function HomeScreen() {
           </View>
           <FlatList
             data={events}
+            ListEmptyComponent={() => (
+              <View className='justify-center items-center p-8 mt-10'>
+                <Text className='text-lg text-gray-500 text-center mb-3'>
+                  Belum ada event yang tersedia saat ini
+                </Text>
+                <Text className='text-gray-400 text-center mb-5'>
+                  Silakan coba lagi nanti atau tarik layar ke bawah untuk menyegarkan
+                </Text>
+                <Pressable 
+                  className='bg-purple-600 py-3 px-6 rounded-lg'
+                  onPress={onRefresh}
+                >
+                  <Text className='text-white font-medium'>Muat Ulang</Text>
+                </Pressable>
+              </View>
+            )}
             renderItem={({ item }) => (
               <Pressable onPress={() => router.push(`/events/${item.id}`)}>
                 <FullWidthEventCard

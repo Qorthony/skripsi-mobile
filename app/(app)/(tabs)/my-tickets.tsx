@@ -1,5 +1,5 @@
 import { View, Text, ScrollView, Image, TouchableOpacity, RefreshControl } from 'react-native'
-import React, { act, useEffect, useState } from 'react'
+import React, { act, useEffect, useState, createContext } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Card } from '@/components/ui/card'
 import { HStack } from '@/components/ui/hstack'
@@ -33,6 +33,14 @@ import { router } from 'expo-router'
 import { useForm, Controller } from 'react-hook-form';
 import { Spinner } from '@/components/ui/spinner';
 import { rupiahFormat } from '@/helpers/currency';
+import BackendRequest from '@/services/Request'
+
+// Membuat context untuk sharing fungsi refresh
+const TicketsContext = createContext<{
+  refreshTickets: () => Promise<any[]>;
+}>({
+  refreshTickets: async () => [],
+});
 
 const apiUrl: string = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000/api';
 
@@ -68,6 +76,7 @@ export default function MyTickets() {
     } catch (error) {
       console.error(error);
       setRefreshing(false);
+      return [];
     }
   };
 
@@ -87,36 +96,43 @@ export default function MyTickets() {
     );
   }
 
+  // Menyediakan context value berupa fungsi getMyTickets untuk children
+  const contextValue = {
+    refreshTickets: getMyTickets
+  };
+
   return (
-    <SafeAreaView className='flex-1 bg-slate-100'>
-      <ScrollView
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-          />
-        }
-      >
-        <View className='mx-2'>
-          <Text className='font-bold mb-2 text-2xl'>My Tickets</Text>
-          {
-            myTickets.length === 0 ? (
-              <Card className='mt-2 h-96 justify-center items-center'>
-                <Text className='text-center text-xl font-semibold'>Belum ada tiket</Text>
-              </Card>
-            ) :
-              myTickets.map((ticket, i) => (
-                <TouchableOpacity
-                  key={ticket.id}
-                  onPress={() => router.push(`/tickets/${ticket.id}`)}
-                >
-                  <TicketCard key={i} ticket={ticket} />
-                </TouchableOpacity>
-              ))
+    <TicketsContext.Provider value={contextValue}>
+      <SafeAreaView className='flex-1 bg-slate-100'>
+        <ScrollView
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+            />
           }
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+        >
+          <View className='mx-2'>
+            <Text className='font-bold mb-2 text-2xl'>My Tickets</Text>
+            {
+              myTickets.length === 0 ? (
+                <Card className='mt-2 h-96 justify-center items-center'>
+                  <Text className='text-center text-xl font-semibold'>Belum ada tiket</Text>
+                </Card>
+              ) :
+                myTickets.map((ticket, i) => (
+                  <TouchableOpacity
+                    key={ticket.id}
+                    onPress={() => router.push(`/tickets/${ticket.id}`)}
+                  >
+                    <TicketCard key={i} ticket={ticket} />
+                  </TouchableOpacity>
+                ))
+            }
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </TicketsContext.Provider>
   );
 }
 
@@ -193,14 +209,7 @@ function TicketCard({ ticket }: any) {
         </View>
       </HStack>
       <VStack>
-        <Button
-          variant="outline"
-          size="sm"
-          className='mt-2 mb-2'
-          onPress={() => router.push(`/checkin/${ticket.id}`)}
-        >
-          <ButtonText>Check-In</ButtonText>
-        </Button>
+        <TicketCardMainButton ticket={ticket} />
         <Button onPress={() => setShowActionsheet(true)}>
           <ButtonText>Lainnya</ButtonText>
         </Button>
@@ -231,6 +240,112 @@ function TicketCard({ ticket }: any) {
   )
 }
 
+function TicketCardMainButton({ ticket }: any) {
+  const { session } = useSession();
+
+  const [loading, setLoading] = useState(false);
+
+  // Menggunakan useContext untuk mendapatkan fungsi refresh dari komponen parent
+  const { refreshTickets } = React.useContext(TicketsContext);
+
+  const resale = ticket?.resale
+
+  const cancelResale = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${apiUrl}/resales/${resale?.id}?action=cancel`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${session}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Response status: ${res.status}`);
+      }
+
+      let json = await res.json();
+      console.log(json);
+      
+      // Setelah berhasil membatalkan resale, refresh daftar tiket
+      refreshTickets();
+      
+      return json;
+    }
+    catch (error) {
+      console.error(error);
+    }
+    finally {
+      setLoading(false);
+    }
+  }
+
+  const ActivateTicket = (ticketIssuedId: string) => {
+    BackendRequest({
+      endpoint: `ticket-issued/${ticketIssuedId}`,
+      method: 'PATCH',
+      onStart: () => {
+        console.log('Activate Ticket:', ticket.id);
+        setLoading(true);
+      },
+      onSuccess: (data) => {
+        console.log('Ticket activated successfully:', data);
+        refreshTickets();
+      },
+      onError: (error) => {
+        console.error('Error activating ticket:', error);
+      },
+      onComplete: () => {
+        setLoading(false);
+      }
+    });
+  }
+
+  let buttonText = 'Check-In'
+  let buttonAction = () => router.push(`/checkin/${ticket.id}`)
+
+  if (ticket.status === 'resale') {
+    buttonText = 'Batalkan Jual'
+    buttonAction = () => cancelResale()
+  } else if (ticket.status === 'sold') {
+    buttonText = 'Tiket Terjual'
+    // buttonAction = () => router.push(`/resale/${ticket.id}`)
+  }
+  else if (ticket.status === 'checkin') {
+    buttonText = 'Tiket Sudah Diperiksa'
+    buttonAction = () => router.push(`/checkin/${ticket.id}`)
+  }
+  else if (ticket.status === 'inactive') {
+    buttonText = 'Aktifkan Tiket'
+    buttonAction = () => {
+      ActivateTicket(ticket.id)
+    }
+  }
+  else if (ticket.status === 'active') {
+    buttonText = 'Tiket Aktif'
+    buttonAction = () => router.push(`/checkin/${ticket.id}`)
+  }
+
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      className='mt-2 mb-2'
+      onPress={buttonAction}
+      disabled={loading}
+    >
+      <ButtonText>
+        {loading ? (
+          <Spinner color="gray.500" />
+        ) : ""}
+        {buttonText}
+      </ButtonText>
+    </Button>
+  )
+}
+
 type ResaleDrawerProps = {
   showDrawer: boolean;
   setShowDrawer: React.Dispatch<React.SetStateAction<boolean>>;
@@ -243,6 +358,7 @@ function ResaleDrawer({
   ticket
 }: ResaleDrawerProps) {
   const { session } = useSession();
+  const { refreshTickets } = React.useContext(TicketsContext);
 
   const { control, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
@@ -275,7 +391,9 @@ function ResaleDrawer({
       let json = await res.json();
       console.log(json.data);
 
+      // Setelah operasi resale berhasil, refresh daftar tiket
       setShowDrawer(false);
+      refreshTickets();
       return json.data;
     }
     catch (error) {
