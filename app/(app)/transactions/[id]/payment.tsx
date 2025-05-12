@@ -37,6 +37,10 @@ export default function Payment() {
 
       let json = await res.json();
       console.log(json.data);
+
+      if (json.data.total_harga===0) {
+        router.replace(`/transactions/${id}/success`);
+      }
       
       setTransaction(json.data);
       return json.data;

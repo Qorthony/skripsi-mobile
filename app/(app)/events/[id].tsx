@@ -11,6 +11,7 @@ import { useSession } from '@/hooks/auth/ctx';
 import { rupiahFormat } from '@/helpers/currency';
 import { Spinner } from '@/components/ui/spinner';
 import dayjs from 'dayjs';
+import { date } from 'zod';
 
 type selectedTicket = {
     id: number;
@@ -263,8 +264,8 @@ function TicketCard({
         setSelected([...selected, { id, name: type, price, quantity: 1 }]);
     }
 
-    const isComingSoon = () : boolean => dayjs(date_open).isAfter(dayjs()) || dayjs(date_open).isSame(dayjs(), 'day');
-    const isOver = () : boolean => dayjs(date_close).isBefore(dayjs()) || dayjs(date_close).isSame(dayjs(), 'day');
+    const isComingSoon = () : boolean => dayjs(date_open).isAfter(dayjs()) || dayjs(date_open).isSame(dayjs());
+    const isOver = () : boolean => dayjs(date_close).isBefore(dayjs()) || dayjs(date_close).isSame(dayjs());
     
     return (
         <View className='bg-slate-200 rounded-lg p-2 my-2'>
@@ -274,14 +275,18 @@ function TicketCard({
                 {description && <Text className='text-sm text-gray-600'>{description}</Text>}
                 {isComingSoon() && <Text className='text-sm text-red-500'>Belum buka</Text>}
                 {isOver() && <Text className='text-sm text-red-500'>Tutup</Text>}
-                <View className='items-end'>
-                    <CounterButton
-                        onSubstract={handleSubstract}
-                        onAdd={handleAdd}
-                        value={selected.find((item: any) => item.id === id)?.quantity || 0}
-                        disabled={isComingSoon() || isOver()}
-                    />
-                </View>
+                {
+                    !isComingSoon() && !isOver() ? (
+                        <View className='items-end'>
+                            <CounterButton
+                                onSubstract={handleSubstract}
+                                onAdd={handleAdd}
+                                value={selected.find((item: any) => item.id === id)?.quantity || 0}
+                                disabled={isComingSoon() || isOver()}
+                            />
+                        </View>
+                    ) : null
+                }
             </View>
         </View>
     )

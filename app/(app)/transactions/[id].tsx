@@ -123,7 +123,8 @@ export default function Transaction() {
   
   const eventLocation = transaction?.event?.lokasi === 'online' ? 'Online' : transaction?.event?.kota
 
-  const paymentTotal = transaction?.transaction_items.reduce((acc: number, item: any) => acc + item.total_harga, 0) + 1000
+  const itemsPriceTotal = transaction?.transaction_items.reduce((acc: number, item: any) => acc + item.total_harga, 0)
+  const paymentTotal = itemsPriceTotal!==0? itemsPriceTotal + 1000: 0
 
   const [showModal, setShowModal] = useState(0);
 
@@ -279,12 +280,16 @@ export default function Transaction() {
               </View>
             ))
           }
-          <View className='flex-row justify-between'>
-            <View>
-              <Text className='text-sm'>Biaya Layanan</Text>
+
+          {
+            paymentTotal !== 0 &&
+            <View className='flex-row justify-between'>
+              <View>
+                <Text className='text-sm'>Biaya Layanan</Text>
+              </View>
+              <Text className='text-sm'>Rp. 1.000</Text>
             </View>
-            <Text className='text-sm'>Rp. 1.000</Text>
-          </View>
+          }
           <Divider className='my-2' />
           <View className='flex-row justify-between'>
             <Text className='font-semibold'>Total Pembayaran</Text>
@@ -310,7 +315,7 @@ export default function Transaction() {
             </View>
           </View>
           {
-            selectedPayment === '' ?
+            selectedPayment === '' && paymentTotal!==0 ?
             <Pressable
               className='bg-purple-600 rounded-lg p-2 justify-center'
               onPress={() => setOpenPaymentOptions(true)}
@@ -326,7 +331,7 @@ export default function Transaction() {
               {
                 loading ?
                 <Spinner size="small" color="white" /> :
-                <Text className='text-white text-center'>Bayar Sekarang</Text>
+                <Text className='text-white text-center'>Lanjutkan</Text>
               }
             </Pressable>
           }

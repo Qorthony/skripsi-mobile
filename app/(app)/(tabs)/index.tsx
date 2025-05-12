@@ -81,6 +81,7 @@ export default function HomeScreen() {
             </Text>
           </View>
           <FlatList
+            contentContainerStyle={{ paddingBottom: 100 }}
             data={events}
             ListEmptyComponent={() => (
               <View className='justify-center items-center p-8 mt-10'>
@@ -117,6 +118,7 @@ export default function HomeScreen() {
                 onRefresh={onRefresh}
               />
             }
+            showsVerticalScrollIndicator={false}
           />
         </SafeAreaView>
       )}
