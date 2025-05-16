@@ -321,7 +321,7 @@ function TicketCardMainButton({ ticket }: any) {
     buttonAction = () => ActivateTicket(ticket.id)
   }
   else if (ticket.status === 'active') {
-    buttonText = 'Tiket Aktif'
+    buttonText = 'Check-in'
     buttonAction = () => router.push(`/checkin/${ticket.id}`)
   }
 

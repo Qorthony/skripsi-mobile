@@ -9,13 +9,23 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NFCReaderUsageDescription": "Aplikasi ini menggunakan NFC untuk membaca dan menulis tag tiket",
+        "com.apple.developer.nfc.readersession.formats": [
+          "NDEF"
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.NFC"
+      ],
+      "package": "com.qorthony.skripsi"
     },
     "web": {
       "bundler": "metro",
@@ -36,10 +46,18 @@
           "imageWidth": 200
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b827cbfd-33ff-4129-b03a-33ec96f28f60"
+      }
     }
   }
 }
