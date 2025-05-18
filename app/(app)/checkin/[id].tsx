@@ -9,8 +9,7 @@ import { useSession } from '@/hooks/auth/ctx'
 import NfcManager, { NfcEvents, NfcTech, Ndef } from 'react-native-nfc-manager'
 import { Button, ButtonText } from '@/components/ui/button'
 import BackendRequest from '@/services/Request'
-
-const apiUrl: string = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000/api';
+import { HCESession, NFCTagType4NDEFContentType, NFCTagType4 } from 'react-native-hce'
 
 export default function Checkin() {
     const { id } = useLocalSearchParams()
@@ -24,6 +23,8 @@ export default function Checkin() {
     const [nfcWriting, setNfcWriting] = useState<boolean>(false)
     const [nfcSuccess, setNfcSuccess] = useState<boolean>(false)
     const [error, setError] = useState<string | null>(null)
+    const [hceEnabled, setHceEnabled] = useState<boolean>(false)
+    const [hceActive, setHceActive] = useState<boolean>(false)
 
     // Inisialisasi NFC
     useEffect(() => {
@@ -93,45 +94,43 @@ export default function Checkin() {
                     }
                 })
             }
-        }
-        
-        fetchTicket()    }, [id, session])    // Fungsi untuk melakukan check-in tiket
-    const checkInTicket = async () => {
-        if (!ticket || !ticket.id) {
-            Alert.alert('Error', 'Tidak dapat melakukan check-in, data tiket tidak tersedia')
-            return
-        }
+        }    
+        fetchTicket()    
+    }, [id, session])
 
-        try {
-            await BackendRequest({
-                endpoint: `ticket-issued/${ticket.id}/checkin`,
-                method: 'POST', // Menggunakan POST sesuai dengan dokumentasi API
-                token: session,
-                onStart: () => {
-                    setLoading(true)
-                },
-                onSuccess: (data: any) => {
-                    console.log('Check-in successful:', data)
-                    Alert.alert(
-                        'Check-in Berhasil', 
-                        'Tiket berhasil digunakan untuk check-in',
-                        [{ text: 'OK', onPress: () => router.back() }]
-                    )
-                },
-                onError: (error: any) => {
-                    console.error('Check-in error:', error)
-                    Alert.alert('Gagal Check-in', 'Terjadi kesalahan saat melakukan check-in tiket')
-                },
-                onComplete: () => {
-                    setLoading(false)
-                }
-            })
-        } catch (error) {
-            console.error('Error during check-in:', error)
-            Alert.alert('Error', 'Terjadi kesalahan saat melakukan check-in')
-            setLoading(false)
-        }
-    }
+    // Card Emulation: Emulate device as NFC tag with ticket code (Android only)
+    useEffect(() => {
+        if (Platform.OS !== 'android' || !ticketCode || !hceEnabled) return;
+        let session: HCESession | undefined;
+        let removeListener: (() => void) | undefined;
+        setHceActive(true)
+        const startHce = async () => {
+            try {
+                const tag = new NFCTagType4({
+                    type: NFCTagType4NDEFContentType.Text,
+                    content: `TICKET:${ticketCode}`,
+                    writable: false,
+                });
+                session = await HCESession.getInstance();
+                await session.setApplication(tag);
+                await session.setEnabled(true);
+                removeListener = session.on(
+                    HCESession.Events.HCE_STATE_READ,
+                    () => {
+                        // Optionally show a toast or update state
+                    }
+                );
+            } catch (e) {
+                console.warn('HCE error:', e);
+            }
+        };
+        startHce();
+        return () => {
+            setHceActive(false)
+            if (session) session.setEnabled(false);
+            if (removeListener) removeListener();
+        };
+    }, [ticketCode, hceEnabled])
 
     // Fungsi untuk menulis kode tiket ke NFC tag
     const writeNfc = async () => {
@@ -199,47 +198,48 @@ export default function Checkin() {
         <SafeAreaView className='flex-1 bg-slate-100'>
             <View className='mx-4 my-4'>
                 <Text className='text-2xl font-bold'>Check-in</Text>
-                <Text className='text-lg mb-4'>Untuk memindai tiket silahkan tempelkan pada perangkat organizer</Text>
+                <Text className='text-lg mb-4'>Untuk check-in, Anda dapat menggunakan salah satu mode berikut:</Text>
             </View>
-
             <Card className='mx-4 my-4 p-4 items-center'>
                 {!nfcSupported ? (
                     <View className='items-center justify-center py-20'>
-                        <Text className='text-xl font-semibold text-red-500 mb-4'>
-                            NFC Tidak Didukung
-                        </Text>
-                        <Text className='text-center mb-4'>
-                            Perangkat Anda tidak mendukung fitur NFC yang diperlukan untuk check-in.
-                        </Text>
-                        <Button onPress={handleCancel}>
-                            <ButtonText>Kembali</ButtonText>
-                        </Button>
-                    </View>
-                ) : !nfcEnabled ? (
-                    <View className='items-center justify-center py-20'>
-                        <Text className='text-xl font-semibold text-amber-500 mb-4'>
-                            NFC Tidak Aktif
-                        </Text>
                         <Text className='text-center mb-4'>
                             Silakan aktifkan NFC di pengaturan perangkat Anda untuk melanjutkan.
                         </Text>
                         <Button onPress={handleCancel}>
                             <ButtonText>Kembali</ButtonText>
                         </Button>
-                    </View>                ) : nfcSuccess ? (
+                    </View>
+                ) : hceEnabled ? (
+                    <View className='items-center justify-center py-20'>
+                        <IconSymbol name="network" size={80} color="#6366F1" />
+                        <Text className='text-xl font-semibold mt-6 mb-2 text-indigo-600'>
+                            Mode Emulasi Kartu (HCE) Aktif
+                        </Text>
+                        <Text className='text-center mb-2'>
+                            Perangkat ini sedang menunggu untuk discan oleh perangkat organizer.
+                        </Text>
+                        <Text className='text-center mb-6'>
+                            Kode Tiket: <Text className='font-bold'>{ticketCode}</Text>
+                        </Text>
+                        <Button onPress={() => setHceEnabled(false)} className='bg-red-500 mb-4 w-full'>
+                            <ButtonText>Matikan Mode Emulasi</ButtonText>
+                        </Button>
+                        <Button variant="outline" onPress={handleCancel} className='w-full'>
+                            <ButtonText>Kembali</ButtonText>
+                        </Button>
+                    </View>
+                ) : nfcSuccess ? (
                     <View className='items-center justify-center py-20'>
                         <CheckCircleIcon color="green" />
                         <Text className='text-xl font-semibold text-green-500 mt-4 mb-2'>
                             Berhasil!
                         </Text>
                         <Text className='text-center mb-6'>
-                            Kode tiket telah berhasil ditulis ke tag NFC. Perangkat organizer dapat melakukan scan.
+                            Kode tiket telah berhasil ditulis ke tag NFC fisik. Perangkat organizer dapat melakukan scan.
                         </Text>
                         <Button onPress={writeNfc} className='bg-indigo-600 mb-4 w-full'>
-                            <ButtonText>Tulis Ulang</ButtonText>
-                        </Button>
-                        <Button onPress={checkInTicket} className='bg-green-600 mb-4 w-full'>
-                            <ButtonText>Proses Check-in Tiket</ButtonText>
+                            <ButtonText>Tulis Ulang ke Tag Fisik</ButtonText>
                         </Button>
                         <Button variant="outline" onPress={handleCancel} className='w-full'>
                             <ButtonText>Kembali</ButtonText>
@@ -249,10 +249,10 @@ export default function Checkin() {
                     <View className='items-center justify-center py-20'>
                         <ActivityIndicator size="large" color="#6366F1" />
                         <Text className='text-xl font-semibold mt-4 mb-2'>
-                            Menunggu Tag NFC...
+                            Menunggu Tag NFC Fisik...
                         </Text>
                         <Text className='text-center mb-6'>
-                            Tempelkan perangkat Anda ke tag NFC
+                            Tempelkan perangkat Anda ke tag NFC fisik
                         </Text>
                         <Button variant="outline" onPress={() => NfcManager.cancelTechnologyRequest()}>
                             <ButtonText>Batalkan</ButtonText>
@@ -266,16 +266,21 @@ export default function Checkin() {
                             color="#6366F1"
                         />
                         <Text className='text-xl font-semibold mt-6 mb-2'>
-                            Siap untuk Check-in
+                            Pilih Mode Check-in
                         </Text>
                         <Text className='text-center mb-2'>
                             Kode Tiket: <Text className='font-bold'>{ticketCode}</Text>
                         </Text>
                         <Text className='text-center mb-6'>
-                            Tekan tombol di bawah dan tempelkan perangkat ke tag NFC
+                            Anda dapat:
+                            {"\n"}- Aktifkan mode emulasi (HCE) agar HP ini bisa discan langsung oleh organizer
+                            {"\n"}- Atau tulis kode tiket ke tag NFC fisik
                         </Text>
-                        <Button onPress={writeNfc} className='bg-indigo-600 mb-4 w-full'>
-                            <ButtonText>Mulai NFC Check-in</ButtonText>
+                        <Button onPress={() => setHceEnabled(true)} className='bg-indigo-600 mb-4 w-full'>
+                            <ButtonText>Aktifkan Mode Emulasi (HCE)</ButtonText>
+                        </Button>
+                        <Button onPress={writeNfc} className='bg-slate-500 mb-4 w-full'>
+                            <ButtonText>Tulis ke Tag Fisik</ButtonText>
                         </Button>
                         <Button variant="outline" onPress={handleCancel} className='w-full'>
                             <ButtonText>Batalkan</ButtonText>
