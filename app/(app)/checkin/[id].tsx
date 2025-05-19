@@ -117,6 +117,8 @@ export default function Checkin() {
                 removeListener = session.on(
                     HCESession.Events.HCE_STATE_READ,
                     () => {
+                        console.log('HCE state read');
+                        
                         // Optionally show a toast or update state
                     }
                 );
