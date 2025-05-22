@@ -149,7 +149,7 @@ export default function DetailEvent() {
                     <View className='flex-row justify-end px-4 pb-2'>
                         <Button size="sm" variant="link" action="primary" onPress={() => router.push(`/events/${id}/secondary-tickets`)}>
                             <ButtonText>Secondary Ticket</ButtonText>
-                            <ButtonIcon as={ChevronRightIcon} />
+                            {/* <ButtonIcon as={ChevronRightIcon} /> */}
                         </Button>
                     </View>
 

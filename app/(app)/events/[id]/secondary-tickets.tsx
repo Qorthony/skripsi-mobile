@@ -49,7 +49,7 @@ export default function SecondaryTickets() {
   const getResaleTickets = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${apiUrl}/events/${id}/resales`, {
+      const response = await fetch(`${apiUrl}/resales?event_id=${id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
