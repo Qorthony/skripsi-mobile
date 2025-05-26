@@ -24,7 +24,7 @@ export default function FullWidthEventCard({
 }: PropTypes) {
     return (
         <View className='flex-1 bg-gray-100 m-2 rounded-lg'>
-            <Image source={image} className='w-full h-48 rounded-lg' />
+            <Image source={image? { uri: image }: require('@/assets/images/dummy_poster.png')} className='w-full h-48 rounded-lg' />
             <View className='p-2'>
                 <Text className='font-bold'>
                     {name}

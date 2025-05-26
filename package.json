@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
+    "start:dev": "APP_VARIANT=development expo start",
+    "start:preview": "APP_VARIANT=preview expo start",
+    "start:prod": "APP_VARIANT=production expo start",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "DARK_MODE=media expo start --android",
     "ios": "DARK_MODE=media expo start --ios",

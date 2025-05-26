@@ -26,6 +26,7 @@ type EventType = {
     location: string;
     kota?: string;
     description?: string;
+    poster?: string;
     tickets: TicketTypes[];
 }
 
@@ -133,7 +134,7 @@ export default function DetailEvent() {
             ) : (
                 <View className='flex-1 bg-white'>
                     <Image
-                        source={DUMMY_POSTER}
+                        source={event?.poster? {uri:event.poster}: DUMMY_POSTER}
                         className='w-full h-48 rounded-lg'
                     />
                     <View className='px-4 py-2'>

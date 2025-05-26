@@ -16,6 +16,7 @@ type Event = {
   jadwal_mulai: string;
   jadwal_selesai: string;
   deskripsi?: string;
+  poster?: string;
 };
 
 export default function HomeScreen() {
@@ -107,7 +108,7 @@ export default function HomeScreen() {
                   location={item.lokasi} 
                   city={item.kota} 
                   description={item.deskripsi || ''} 
-                  image={EVENTS_DATA[0].image}
+                  image={item.poster}
                 />
               </Pressable>
             )}

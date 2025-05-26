@@ -83,13 +83,29 @@ def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
 android {
     ndkVersion rootProject.ext.ndkVersion
-
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
+    flavorDimensions "default"
+    productFlavors {
+        dev {
+            dimension "default"
+            applicationId "com.qorthony.skripsi.dev"
+            resValue "string", "app_name", "Skripsi (Dev)"
+        }
+        preview {
+            dimension "default"
+            applicationId "com.qorthony.skripsi.preview"
+            resValue "string", "app_name", "Skripsi (Preview)"
+        }
+        prod {
+            dimension "default"
+            applicationId "com.qorthony.skripsi"
+            resValue "string", "app_name", "Skripsi"
+        }
+    }
     namespace 'com.qorthony.skripsi'
     defaultConfig {
-        applicationId 'com.qorthony.skripsi'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -108,8 +124,6 @@ android {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
             signingConfig signingConfigs.debug
             shrinkResources (findProperty('android.enableShrinkResourcesInReleaseBuilds')?.toBoolean() ?: false)
             minifyEnabled enableProguardInReleaseBuilds
