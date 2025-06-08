@@ -42,7 +42,28 @@ export default () => {
         foregroundImage: './assets/images/adaptive-icon.png',
         backgroundColor: '#ffffff',
       },
-      permissions: ['android.permission.NFC'],
+      permissions: ['android.permission.NFC'],      
+      intentFilters: [
+        // Android App Links (HTTPS)
+        {
+          action: 'VIEW',
+          autoVerify: true,
+          data: {
+            scheme:'https',
+            host: 'skripsi-thony.laravel.cloud',
+            pathPrefix: '/link',
+          },
+          category: ['BROWSABLE', 'DEFAULT'],
+        },
+        // Standard Deep Links (Custom Scheme)
+        {
+          action: 'VIEW',
+          data: {
+            scheme: scheme, // akan jadi 'skripsi', 'skripsidev', atau 'skripsiprev'
+          },
+          category: ['BROWSABLE', 'DEFAULT'],
+        },
+      ],
     },
     web: {
       bundler: 'metro',
