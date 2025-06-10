@@ -47,6 +47,7 @@ export default function Checkin() {
                             [{ text: 'OK' }]
                         )
                     }
+                    // await NfcManager.cancelTechnologyRequest()
                 }
             } catch (ex) {
                 console.warn('Error initializing NFC', ex)
@@ -100,7 +101,7 @@ export default function Checkin() {
 
     // Card Emulation: Emulate device as NFC tag with ticket code (Android only)
     useEffect(() => {
-        if (Platform.OS !== 'android' || !ticketCode || !hceEnabled) return;
+        if (Platform.OS !== 'android' || !ticketCode || !hceEnabled)  return setHceEnabled(false);
         let session: HCESession | undefined;
         let removeListener: (() => void) | undefined;
         setHceActive(true)
@@ -221,9 +222,9 @@ export default function Checkin() {
                         <Text className='text-center mb-2'>
                             Perangkat ini sedang menunggu untuk discan oleh perangkat organizer.
                         </Text>
-                        <Text className='text-center mb-6'>
+                        {/* <Text className='text-center mb-6'>
                             Kode Tiket: <Text className='font-bold'>{ticketCode}</Text>
-                        </Text>
+                        </Text> */}
                         <Button onPress={() => setHceEnabled(false)} className='bg-red-500 mb-4 w-full'>
                             <ButtonText>Matikan Mode Emulasi</ButtonText>
                         </Button>
@@ -270,20 +271,20 @@ export default function Checkin() {
                         <Text className='text-xl font-semibold mt-6 mb-2'>
                             Pilih Mode Check-in
                         </Text>
-                        <Text className='text-center mb-2'>
+                        {/* <Text className='text-center mb-2'>
                             Kode Tiket: <Text className='font-bold'>{ticketCode}</Text>
-                        </Text>
+                        </Text> */}
                         <Text className='text-center mb-6'>
                             Anda dapat:
                             {"\n"}- Aktifkan mode emulasi (HCE) agar HP ini bisa discan langsung oleh organizer
-                            {"\n"}- Atau tulis kode tiket ke tag NFC fisik
+                            {/* {"\n"}- Atau tulis kode tiket ke tag NFC fisik */}
                         </Text>
                         <Button onPress={() => setHceEnabled(true)} className='bg-indigo-600 mb-4 w-full'>
                             <ButtonText>Aktifkan Mode Emulasi (HCE)</ButtonText>
                         </Button>
-                        <Button onPress={writeNfc} className='bg-slate-500 mb-4 w-full'>
+                        {/* <Button onPress={writeNfc} className='bg-slate-500 mb-4 w-full'>
                             <ButtonText>Tulis ke Tag Fisik</ButtonText>
-                        </Button>
+                        </Button> */}
                         <Button variant="outline" onPress={handleCancel} className='w-full'>
                             <ButtonText>Batalkan</ButtonText>
                         </Button>

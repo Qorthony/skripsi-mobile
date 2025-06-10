@@ -203,7 +203,7 @@ function TicketCard({ ticket }: any) {
         <View>
           <Badge size="md" variant="solid" action={badgeAttributes[ticket.status].color}>
             <BadgeText>{ticket.status}</BadgeText>
-            <BadgeIcon as={badgeAttributes[ticket.status].icon} className="ml-2" />
+            {/* <BadgeIcon as={badgeAttributes[ticket.status].icon} className="ml-2" /> */}
           </Badge>
         </View>
       </HStack>
