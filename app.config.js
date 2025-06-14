@@ -50,7 +50,7 @@ export default () => {
           autoVerify: true,
           data: {
             scheme:'https',
-            host: '*.qorthony.my.id',
+            host: 'skripsi.qorthony.my.id',
             pathPrefix: '/link',
           },
           category: ['BROWSABLE', 'DEFAULT'],
