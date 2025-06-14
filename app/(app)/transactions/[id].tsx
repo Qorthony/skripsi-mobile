@@ -517,18 +517,6 @@ function FormModal({
                 />
                 {errors.email && <Text className='text-red-600'>{errors.email.message}</Text>}
 
-                {/* <Input
-                    className='mb-2'
-                    variant='underlined'
-                    size='sm'
-                >
-                    <InputField 
-                      placeholder='Email' 
-                      onChangeText={(text)=>handleInputChange('email',text)}
-                      value={formData.email}
-                    />
-                </Input> */}
-
                 <Controller
                   control={control}
                   name="ticket_id"
@@ -568,40 +556,6 @@ function FormModal({
                     </Select>
                   )}
                 />
-
-                {/* <Select 
-                  className='mb-2'
-                  defaultValue={availableTickets.find((ticket) => ticket.value === formData.ticket_id)?.label}
-                  initialLabel={availableTickets.find((ticket) => ticket.value === formData.ticket_id)?.label} 
-                  onValueChange={(value) => handleInputChange('ticket_id', value)}
-                >
-                    <SelectTrigger className='w-full items-center flex-row justify-between' variant="underlined" size="sm">
-                        <SelectInput
-                          className='m-0 p-0' 
-                          placeholder="Pilih Tiket" 
-                        />
-                        <SelectIcon className="me-3" as={ChevronDownIcon} />
-                    </SelectTrigger>
-                    <SelectPortal>
-                        <SelectBackdrop />
-                        <SelectContent>
-                            <SelectDragIndicatorWrapper>
-                                <SelectDragIndicator />
-                            </SelectDragIndicatorWrapper>
-                            {
-                              availableTickets.map((ticket, index) => (
-                                <SelectItem
-                                  className={ticket?.used?'text-white bg-slate-200':''} 
-                                  key={index} 
-                                  label={ticket.label} 
-                                  value={ticket.value}
-                                  isDisabled={ticket.used} 
-                                />
-                              ))
-                            }
-                        </SelectContent>
-                    </SelectPortal>
-                </Select> */}
                 {errors.ticket_id && <Text className='text-red-600'>{errors.ticket_id.message}</Text>}
                 {errors.pemesan && <Text className='text-red-600'>{errors.pemesan.message}</Text>}
                 {errors.id && <Text className='text-red-600'>{errors.id.message}</Text>}

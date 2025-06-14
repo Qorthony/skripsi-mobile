@@ -5,7 +5,7 @@ import { Slot, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useEffect } from 'react';
-import { Linking } from 'react-native';
+import { Alert, Linking } from 'react-native';
 
 export default function Root() {
     const colorScheme = useColorScheme();
@@ -73,7 +73,7 @@ export default function Root() {
             
             // Handle HTTPS links (Android App Links)
             else if (urlObj.protocol === 'https:' && 
-                     urlObj.hostname === 'skripsi-thony.laravel.cloud' &&
+                     urlObj.hostname === 'skripsi.qorthony.my.id' &&
                      urlObj.pathname.startsWith('/link/')) {
                 
                 const path = urlObj.pathname.replace('/link', '');
@@ -102,8 +102,15 @@ export default function Root() {
                     // Default route
                     router.push('/(app)/(tabs)');
                 }
-            }        } catch (error) {
+            }        
+        } catch (error) {
             console.error('Error parsing deep link:', error);
+            // gunakan alert untuk debugging dari native
+            Alert.alert(
+                'Error',
+                'Terjadi kesalahan saat memproses link. Pastikan link valid.',
+                [{ text: 'OK', onPress: () => console.log('OK Pressed') }]
+            );
             // Fallback ke route default jika ada error
             router.push('/(app)/(tabs)');
         }

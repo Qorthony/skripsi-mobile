@@ -50,7 +50,7 @@ export default () => {
           autoVerify: true,
           data: {
             scheme:'https',
-            host: 'skripsi-thony.laravel.cloud',
+            host: '*.qorthony.my.id',
             pathPrefix: '/link',
           },
           category: ['BROWSABLE', 'DEFAULT'],
