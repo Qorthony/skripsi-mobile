@@ -28,6 +28,16 @@
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="myapp"/>
         <data android:scheme="exp+skripsi"/>
+        <data android:scheme="skripsi"/>
+      </intent-filter>
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data
+            android:scheme="https"
+            android:host="skripsi.qorthony.my.id"
+            android:pathPrefix="/link" />
       </intent-filter>
     </activity>
     <service
