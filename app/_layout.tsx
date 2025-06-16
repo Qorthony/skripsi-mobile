@@ -43,29 +43,33 @@ export default function Root() {
                 urlObj.protocol === 'skripsidev:' || 
                 urlObj.protocol === 'skripsiprev:') {
                 
+                const host = urlObj.hostname;
                 const path = urlObj.pathname;
+
+                console.log('Parsed host:',  path.split('/'));
                 
                 // Navigate berdasarkan path
-                if (path.startsWith('/checkin/')) {
-                    const id = path.split('/')[2];
+                if (host === 'checkin') {
+                    const id = path.split('/')[1];
                     if (id) {
                         router.push(`/(app)/checkin/${id}`);
                     }
-                } else if (path.startsWith('/events/')) {
-                    const id = path.split('/')[2];
+                } else if (host === 'events') {
+                    const id = path.split('/')[1];
                     if (id) {
                         router.push(`/(app)/events/${id}`);
                     }
-                } else if (path.startsWith('/tickets/')) {
-                    const id = path.split('/')[2];
+                } else if (host === 'tickets') {
+                    const id = path.split('/')[1];
                     if (id) {
                         router.push(`/(app)/tickets/${id}`);
                     }
-                } else if (path.startsWith('/transactions/')) {
-                    const id = path.split('/')[2];
+                } else if (host === 'transactions') {
+                    const id = path.split('/')[1];
                     if (id) {
                         router.push(`/(app)/transactions/${id}`);
-                    }                } else {
+                    }                
+                } else {
                     // Default route
                     router.push('/(app)/(tabs)');
                 }
