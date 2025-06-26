@@ -5,6 +5,7 @@ import { HStack } from '@/components/ui/hstack';
 import { Input, InputField } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { useSession } from '@/hooks/auth/ctx';
+import BackendRequest from '@/services/Request';
 import { Link, Redirect, router } from 'expo-router';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
@@ -21,10 +22,13 @@ export default function Login() {
 
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    
     
     const logIn = async () => {
         console.log('login button clicked');
         setLoading(true);
+        setError(null);
         try {
             const res = await fetch(apiUrl+'/login', {
                 method: 'POST',
@@ -39,6 +43,7 @@ export default function Login() {
 
             if (!res.ok) {
                 const json = await res.json();
+                setError(json.message || 'Login gagal');
                 throw new Error(`${json.message}`);
             }
 
@@ -47,7 +52,10 @@ export default function Login() {
             console.log(data.user?.email);
             setUser(data.user);
             router.push('/verify-otp');
-        } catch (error) {
+        } catch (error: any) {
+            if (!error.message && error instanceof Error) {
+                setError(error.message);
+            }
             console.error(error);
         } finally {
             setLoading(false);
@@ -93,6 +101,10 @@ export default function Login() {
                     </Input>
                 </View>
                 
+                {error && (
+                    <Text className='text-red-500 mb-2'>{error}</Text>
+                )}
+
                 <Button onPress={logIn} disabled={loading}>
                     {loading ? <Spinner /> : <ButtonText>Login</ButtonText>}
                 </Button>

@@ -7,6 +7,7 @@ import { router } from 'expo-router'
 import { Card } from '@/components/ui/card'
 import { useSession } from '@/hooks/auth/ctx'
 import { Spinner } from '@/components/ui/spinner'
+import BackendRequest from '@/services/Request'
 
 export default function VerifyOTP() {
     const { signIn, user } = useSession();
@@ -17,9 +18,13 @@ export default function VerifyOTP() {
 
     const [otp, setOtp] = useState('');
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [resendLoading, setResendLoading] = useState(false);
+    const email = user?.email || '';
 
     const verifyOTP = async () => {
         setLoading(true);
+        setError(null);
         try {
             const res = await fetch(apiUrl+'/login/verifyOtp', {
                 method: 'POST',
@@ -33,7 +38,13 @@ export default function VerifyOTP() {
             });
 
             if (!res.ok) {
-                throw new Error(`Response status: ${res.status}`);
+                let message = `Response status: ${res.status}`;
+                try {
+                    const json = await res.json();
+                    message = json.message || message;
+                } catch {}
+                setError(message);
+                throw new Error(message);
             }
 
             const data = await res.json();
@@ -41,12 +52,43 @@ export default function VerifyOTP() {
             console.log(data.token);
             signIn(data.token);
             router.replace('/');
-        } catch (error) {
+        } catch (error: any) {
+            if (error instanceof Error && error.message) {
+                setError(error.message);
+            }
             console.error(error);
         } finally {
             setLoading(false);
         }
     }
+
+    const handleResendOtp = () => {
+        if (!email) {
+            console.error('Email is missing');
+            return;
+        }
+        setResendLoading(true);
+        BackendRequest({
+            endpoint: '/login/resendOtp',
+            method: 'POST',
+            body: {
+                email: email,
+            },
+            onStart: () => {
+                console.log('Resend OTP request started');
+            },
+            onSuccess: (data) => {
+                console.log('Resend OTP successful', data);
+            },
+            onError: (error) => {
+                console.error('Resend OTP failed', error);
+            },
+            onComplete: () => {
+                setResendLoading(false);
+                console.log('Resend OTP request completed');
+            },
+        });
+    };
     
   return (
     <SafeAreaView className='flex-1 bg-slate-100'>
@@ -69,11 +111,14 @@ export default function VerifyOTP() {
                         <InputField placeholder='123456' onChangeText={setOtp} />
                     </Input>
                 </View>
+                {error && (
+                    <Text className='text-red-500 mb-2'>{error}</Text>
+                )}
                 <Button onPress={verifyOTP} disabled={loading}>
                     {loading ? <Spinner /> : <ButtonText>Verify</ButtonText>}
                 </Button>
-                <Button variant='link' className='mt-4'>
-                    <ButtonText>Resend OTP</ButtonText>
+                <Button variant='link' className='mt-4' onPress={handleResendOtp} disabled={resendLoading}>
+                    {resendLoading ? <Spinner /> : <ButtonText>Resend OTP</ButtonText>}
                 </Button>
             </Card>
         </View>

@@ -92,6 +92,7 @@ export default function Register() {
             </View>
             <View className='mb-4'>
               <Text>Nama</Text>
+              <Text className='text-sm text-red-500 mb-2'>Nama harus sesuai KTP. Untuk keperluan verifikasi identitas</Text>
               <Controller
                 control={control}
                 name='name'

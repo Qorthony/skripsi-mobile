@@ -34,6 +34,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { Spinner } from '@/components/ui/spinner';
 import { rupiahFormat } from '@/helpers/currency';
 import BackendRequest from '@/services/Request'
+import * as SecureStore from 'expo-secure-store';
 
 // Membuat context untuk sharing fungsi refresh
 const TicketsContext = createContext<{
@@ -49,6 +50,20 @@ export default function MyTickets() {
 
   const [myTickets, setMyTickets] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Ambil tiket dari SecureStore saat komponen mount
+  useEffect(() => {
+    const loadTickets = async () => {
+      try {
+        const stored = await SecureStore.getItemAsync('myTickets');
+        if (stored) setMyTickets(JSON.parse(stored));
+      } catch (e) {
+        console.error('Gagal load tiket dari SecureStore', e);
+      }
+      getMyTickets();
+    };
+    loadTickets();
+  }, []);
 
   const getMyTickets = async () => {
     setRefreshing(true);
@@ -70,6 +85,8 @@ export default function MyTickets() {
       let json = await res.json();
 
       setMyTickets(json.data);
+      // Simpan data tiket ke SecureStore
+      await SecureStore.setItemAsync('myTickets', JSON.stringify(json.data));
       setRefreshing(false);
       return json.data;
     } catch (error) {
@@ -83,9 +100,9 @@ export default function MyTickets() {
     await getMyTickets();
   };
 
-  useEffect(() => {
-    getMyTickets();
-  }, []);
+  // useEffect(() => {
+  //   getMyTickets();
+  // }, []);
 
   if (refreshing) {
     return (
@@ -209,9 +226,15 @@ function TicketCard({ ticket }: any) {
       </HStack>
       <VStack>
         <TicketCardMainButton ticket={ticket} />
-        <Button onPress={() => setShowActionsheet(true)}>
-          <ButtonText>Lainnya</ButtonText>
-        </Button>
+        {
+          ticket.status !== 'sold' || ticket.status !== 'checkin' ? 
+          (
+          <Button onPress={() => setShowActionsheet(true)}>
+            <ButtonText>Lainnya</ButtonText>
+          </Button>
+          ):""
+
+        }
 
         <Actionsheet isOpen={showActionsheet} onClose={handleClose}>
           <ActionsheetBackdrop />
@@ -280,7 +303,7 @@ function TicketCardMainButton({ ticket }: any) {
     }
   }
 
-  const ActivateTicket = (ticketIssuedId: string) => {
+  const ActivateTicket = async (ticketIssuedId: string) => {
     BackendRequest({
       endpoint: `/ticket-issued/${ticketIssuedId}`,
       method: 'PATCH',
@@ -289,9 +312,27 @@ function TicketCardMainButton({ ticket }: any) {
         console.log('Activate Ticket:', ticket.id);
         setLoading(true);
       },
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
         console.log('Ticket activated successfully:', data);
         refreshTickets();
+        // Fetch ticket detail dan simpan kode tiket ke SecureStore
+        try {
+          const res = await fetch(`${apiUrl}/ticket-issued/${ticketIssuedId}/checkin`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': `Bearer ${session}`,
+            },
+          });
+          if (res.ok) {
+            const json = await res.json();
+            const kodeTiket = json.data?.kode_tiket || '';
+            await SecureStore.setItemAsync(`ticketCode_${ticketIssuedId}`, kodeTiket);
+          }
+        } catch (e) {
+          console.error('Gagal fetch/simpan kode tiket setelah aktivasi', e);
+        }
       },
       onError: (error) => {
         console.error('Error activating ticket:', error);
@@ -314,7 +355,7 @@ function TicketCardMainButton({ ticket }: any) {
   }
   else if (ticket.status === 'checkin') {
     buttonText = 'Tiket Sudah Diperiksa'
-    buttonAction = () => router.push(`/checkin/${ticket.id}`)
+    buttonAction = () => {}
   }
   else if (ticket.status === 'inactive') {
     buttonText = 'Aktifkan Tiket'

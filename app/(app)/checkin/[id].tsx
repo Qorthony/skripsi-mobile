@@ -10,6 +10,7 @@ import NfcManager, { NfcEvents, NfcTech, Ndef } from 'react-native-nfc-manager'
 import { Button, ButtonText } from '@/components/ui/button'
 import BackendRequest from '@/services/Request'
 import { HCESession, NFCTagType4NDEFContentType, NFCTagType4 } from 'react-native-hce'
+import * as SecureStore from 'expo-secure-store';
 
 export default function Checkin() {
     const { id } = useLocalSearchParams()
@@ -70,10 +71,25 @@ export default function Checkin() {
         }
     }, [])    
     
-    // Ambil data tiket dari API menggunakan BackendRequest    
+    // Ambil data tiket dari SecureStore terlebih dahulu, jika tidak ada baru request ke server
     useEffect(() => {
         const fetchTicket = async () => {
-            if (id && session) {
+            if (!id) return;
+            const key = `ticketCode_${id}`;
+            try {
+                const storedCode = await SecureStore.getItemAsync(key);
+                if (storedCode) {
+                    setTicketCode(storedCode);
+                    setLoading(false);
+                    // Jika ingin menampilkan data tiket lain, bisa simpan juga data tiket secara full di SecureStore
+                    // setTicket(JSON.parse(await SecureStore.getItemAsync(`ticketData_${id}`) || '{}'));
+                    return;
+                }
+            } catch (e) {
+                console.error('Gagal membaca kode tiket dari SecureStore', e);
+            }
+            // Jika tidak ada di SecureStore, request ke server
+            if (session) {
                 await BackendRequest({
                     endpoint: `/ticket-issued/${id}/checkin`,
                     method: 'GET',
@@ -81,10 +97,12 @@ export default function Checkin() {
                     onStart: () => {
                         setLoading(true)
                     },
-                    onSuccess: (data: any) => {
+                    onSuccess: async (data: any) => {
                         setTicket(data.data)
                         setTicketCode(data.data?.kode_tiket || null)
                         console.log('Ticket data fetched:', data.data)
+                        // Simpan kode tiket ke SecureStore
+                        await SecureStore.setItemAsync(key, data.data?.kode_tiket || '');
                     },
                     onError: (error: any) => {
                         console.error('Error fetching ticket:', error)
@@ -95,8 +113,8 @@ export default function Checkin() {
                     }
                 })
             }
-        }    
-        fetchTicket()    
+        }
+        fetchTicket()
     }, [id, session])
 
     // Card Emulation: Emulate device as NFC tag with ticket code (Android only)
