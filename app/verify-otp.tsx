@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native'
+import { View, Text, Platform } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Input, InputField } from '@/components/ui/input'
@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card'
 import { useSession } from '@/hooks/auth/ctx'
 import { Spinner } from '@/components/ui/spinner'
 import BackendRequest from '@/services/Request'
+import * as Device from 'expo-device';
 
 export default function VerifyOTP() {
     const { signIn, user } = useSession();
@@ -26,6 +27,10 @@ export default function VerifyOTP() {
         setLoading(true);
         setError(null);
         try {
+            let device_id = '';
+            if (Platform.OS === 'android') {
+                device_id = Device.deviceName || Device.osInternalBuildId || Device.modelId || '';
+            }
             const res = await fetch(apiUrl+'/login/verifyOtp', {
                 method: 'POST',
                 headers: {
@@ -34,6 +39,7 @@ export default function VerifyOTP() {
                 body: JSON.stringify({
                     email: user?.email,
                     otp_code: otp,
+                    device_id: device_id,
                 }),
             });
 
